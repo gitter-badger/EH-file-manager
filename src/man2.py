@@ -7,60 +7,61 @@ logger = logging.getLogger(__name__)
 
 import argparse
 import os
-import sqlite3
 
-class ManMan():
+from database_model import DatabaseModel
+
+class Man2():
     """
     Main class of application
     """
     
-    def __init__(self, gallerypath=None):
+    def __init__(self, gallerypath=None, configdir='.config'):
         self.gallerypath = gallerypath
-        self.liteconnection = None
-        self.litecursor = None
+        self.configdir = configdir
+        self.dbmodel = None
         
         if self.gallerypath is not None:
             self.open_path(self.gallerypath)
     
     def open_path(self, path):
+        """
+        Open path as a gallery and creates connection to its database. If path is not gallery creates empty gallery structure.
+        """
         self.gallerypath = path
         # checks if path is existing gallery. if not creates one.
         if self.is_gallery(self.gallerypath) is False:
             self.init_gallery(self.gallerypath)
             
         # open connection to database
-        self.liteconnection = sqlite3.connect(os.path.join(path,".manman/database.db"))
-        self.litecursor = self.liteconnection.cursor()
-        
-        # print sqldatabase info
-        logger.debug("SQLite version: %s", sqlite3.sqlite_version)    
+        self.dbmodel = DatabaseModel(self.gallerypath, configdir=self.configdir)
+        self.dbmodel.open_database()   
     
+    # TODO - propper check
     def is_gallery(self, path):
-        if os.path.isdir(os.path.join(path,".manman")) is True:
-            logger.debug('Path is gallery.')
+        """
+        Checks if path leads to existing gallery.
+        """
+        if os.path.isdir(os.path.join(path, self.configdir)) is True:
+            logger.debug('is_gallery: given path is existing gallery.')
             return True
         else:
-            logger.debug('Path is not gallery.')
+            logger.debug('is_gallery: given path is not gallery.')
             return False
         
     def init_gallery(self, path, destructive=False):
+        """
+        Creates new gallery basic structure.
+        """
         logger.debug('Creating new gallery structure...')
         
         # create folder structure
-        os.mkdir(os.path.join(path,".manman"))
-        os.mkdir(os.path.join(path,"Files"))
-        
-        # init database
-        liteconnection = sqlite3.connect(os.path.join(path,".manman/database.db"))
-        litecursor = liteconnection.cursor()
-        litecursor.execute('''CREATE TABLE files (name text, route text, hash text, tags text)''')
-        liteconnection.commit()
-        liteconnection.close()
+        os.mkdir(os.path.join(path, self.configdir))
+        os.mkdir(os.path.join(path, "Files"))
     
 def main():
     # Parasing input prarmeters
     parser = argparse.ArgumentParser(
-        description='ManMan (Manga Manager)'
+        description='Man2 (Manga Manager)'
     )
     parser.add_argument(
         '-g', '--gallery',
@@ -77,6 +78,7 @@ def main():
     args = parser.parse_args()
     
     # Logger configuration
+    logger = logging.getLogger()
     if args.debug:
         logger.setLevel(logging.DEBUG)
     else:
@@ -84,7 +86,7 @@ def main():
         
     if args.nogui:
         logger.debug('Running without gui.')
-        gallery = ManMan()
+        gallery = Man2()
         gallery.open_path(args.gallery)
     else:
         logger.debug('Running with gui.')
