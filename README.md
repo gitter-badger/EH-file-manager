@@ -1,4 +1,4 @@
-ManMan
+Man2
 ======
 
 MANga MANager
@@ -8,7 +8,7 @@ Install
 -------
 To get current development:
 
-    git clone https://github.com/kunesj/ManMan.git
+    git clone https://github.com/kunesj/Man2.git
 
 Dependencies on Ubuntu/Mint 13.10:
 
