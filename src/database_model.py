@@ -31,7 +31,12 @@ class DatabaseModel():
         self.litecursor = self.liteconnection.cursor()
         
         # print sqldatabase info
-        logger.debug("SQLite version: %s", sqlite3.sqlite_version)   
+        logger.debug("SQLite version: %s", sqlite3.sqlite_version)  
+        
+    def close_database(self):
+        self.liteconnection.commit()
+        self.liteconnection.close()
+        logger.debug('Connection with database was closed.')
         
     def init_database(self):
         """
