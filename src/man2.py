@@ -7,6 +7,7 @@ logger = logging.getLogger(__name__)
 
 import argparse
 import os
+import hashlib
 
 from database_model import DatabaseModel
 
@@ -57,6 +58,40 @@ class Man2():
         # create folder structure
         os.mkdir(os.path.join(path, self.configdir))
         os.mkdir(os.path.join(path, "Files"))
+        
+    def get_filehash(self, filepath):
+        """
+        Returns file MD5 hash.
+        """
+        
+        afile = open(filepath, 'rb')
+        buf = afile.read()
+        afile.close()
+        
+        hasher = hashlib.md5()
+        hasher.update(buf)
+        
+        md5hash = hasher.hexdigest()
+        logger.debug('Generated md5 hash - '+str(md5hash))
+        
+        return md5hash
+        
+    def process_file(self, filepath):
+        logger.debug('Processing file - '+str(filepath))
+        md5hash = self.get_filehash(filepath)
+        filename = os.path.basename(filepath)
+        
+        self.dbmodel.add_file(md5hash, filename, names={'eng':os.path.splitext(filename)[0],'jp':''})
+        
+    # TODO - not needed in end product
+    def get_file_info(self, filepath):
+        md5hash = self.get_filehash(filepath)
+        info = self.dbmodel.get_files_by_hash(md5hash)
+        
+        return info
+        
+    def update_file(self, filehash):
+        pass
     
 def main():
     # Parasing input prarmeters
@@ -88,6 +123,9 @@ def main():
         logger.debug('Running without gui.')
         gallery = Man2()
         gallery.open_path(args.gallery)
+        testfilepath = os.path.join(args.gallery, 'Files/test.zip')
+        #gallery.process_file(testfilepath)
+        print gallery.get_file_info(testfilepath)
     else:
         logger.debug('Running with gui.')
     

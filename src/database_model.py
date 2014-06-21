@@ -39,6 +39,23 @@ class DatabaseModel():
         """
         liteconnection = sqlite3.connect(self.dbpath)
         litecursor = liteconnection.cursor()
-        litecursor.execute('''CREATE TABLE files (name text, route text, hash text, tags text)''')
+        litecursor.execute("CREATE TABLE Files (hash text, filename text, name_eng text, name_jp text, tags text)")
         liteconnection.commit()
         liteconnection.close()
+        
+    def add_file(self, filehash, filename, names={'eng':'','jp':''}, tags=[]):
+        tags_processed = ' '.join(tags)
+                
+        query = "INSERT INTO Files VALUES ('"+filehash+"', '"+filename+"', '"+str(names['eng'])+"', '"+str(names['jp'])+"', '"+tags_processed+"' )"
+        logger.debug('SQLite newfile query: '+str(query))
+        
+        self.litecursor.execute(query)
+        self.liteconnection.commit()
+    
+    def get_files_by_hash(self, filehash):
+        self.litecursor.execute("SELECT * FROM Files WHERE hash = '"+filehash+"' ")
+        returned_data = self.litecursor.fetchall()
+        
+        return returned_data
+        
+        
