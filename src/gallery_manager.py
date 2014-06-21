@@ -115,8 +115,14 @@ class GalleryManager():
     # TODO - not needed in end product
     def get_file_info(self, filepath):
         md5hash = self.get_filehash(filepath)
-        info = self.dbmodel.get_files_by_hash(md5hash)
+        return self.get_file_by_hash(md5hash)
         
+    def get_file_by_hash(self, filehash):
+        info = self.dbmodel.get_files_by_hash(filehash)
+        return info
+        
+    def get_files(self):
+        info = self.dbmodel.get_files()
         return info
         
     def update_file(self, filehash):

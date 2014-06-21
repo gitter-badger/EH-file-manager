@@ -57,10 +57,17 @@ class DatabaseModel():
         self.litecursor.execute(query)
         self.liteconnection.commit()
     
+    def get_files(self):
+        self.litecursor.execute("SELECT * FROM Files")
+        returned_data = self.litecursor.fetchall()
+        
+        return returned_data
+    
     def get_files_by_hash(self, filehash):
         self.litecursor.execute("SELECT * FROM Files WHERE hash = '"+filehash+"' ")
         returned_data = self.litecursor.fetchall()
         
         return returned_data
         
+    
         
