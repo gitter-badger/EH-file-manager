@@ -44,10 +44,19 @@ def main():
         logger.debug('Running without gui.')
         gallery = GalleryManager()
         gallery.open_path(args.gallery)
-        testfilepath = os.path.join(args.gallery, 'Files/test.zip')
-        #gallery.process_file(testfilepath)
-        print gallery.get_file_info(testfilepath)
-        print gallery.info_from_ehentai_link('http://g.e-hentai.org/g/618395/0439fa3666/')
+        
+        filefolder = os.path.join(args.gallery, 'Files')
+        c = -1
+        while c is not 0:
+            c = int(raw_input("1 - to add file\n2 - to get info about file\n0 - to exit\n"))
+            if c is 1:
+                name = raw_input("Write name of file to add:\n")
+                gallery.process_file(os.path.join(filefolder, name))
+            elif c is 2:
+                name = raw_input("Write name of file:\n")
+                print gallery.get_file_info(os.path.join(filefolder, name))
+                
+        #print gallery.info_from_ehentai_link('http://g.e-hentai.org/g/618395/0439fa3666/')
     else:
         logger.debug('Running with gui.')
         app = QApplication(sys.argv)
