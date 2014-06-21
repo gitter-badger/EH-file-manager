@@ -8,6 +8,9 @@ import os
 import sys
 import hashlib
 
+import requests
+import json
+
 from database_model import DatabaseModel
 
 class GalleryManager():
@@ -64,6 +67,26 @@ class GalleryManager():
         os.mkdir(os.path.join(path, self.configdir))
         os.mkdir(os.path.join(path, "Files"))
         
+    def info_from_ehentai_link(self, ehlink):
+        index = ehlink.find('hentai.org/g/')
+        splited = ehlink[(index+13):].split('/')
+        
+        gallery_id = splited[0]
+        gallery_token = splited[1]
+        
+        return self.info_from_ehentai(gallery_id, gallery_token)
+    
+    def info_from_ehentai(self, gallery_id, gallery_token):
+        """
+        http://ehwiki.org/wiki/API
+        """
+        payload = json.dumps({'method': 'gdata', 'gidlist': [[gallery_id, gallery_token]]})
+        headers = {'content-type': 'application/json'}
+        
+        r = requests.post("http://g.e-hentai.org/api.php", data=payload, headers=headers)
+        
+        return r.json()
+    
     def get_filehash(self, filepath):
         """
         Returns file MD5 hash.
@@ -85,8 +108,9 @@ class GalleryManager():
         logger.debug('Processing file - '+str(filepath))
         md5hash = self.get_filehash(filepath)
         filename = os.path.basename(filepath)
+        names = {'eng':os.path.splitext(filename)[0],'jp':''}
         
-        self.dbmodel.add_file(md5hash, filename, names={'eng':os.path.splitext(filename)[0],'jp':''})
+        self.dbmodel.add_file(md5hash, filename, names=names)
         
     # TODO - not needed in end product
     def get_file_info(self, filepath):

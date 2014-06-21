@@ -47,6 +47,7 @@ def main():
         testfilepath = os.path.join(args.gallery, 'Files/test.zip')
         #gallery.process_file(testfilepath)
         print gallery.get_file_info(testfilepath)
+        print gallery.info_from_ehentai_link('http://g.e-hentai.org/g/618395/0439fa3666/')
     else:
         logger.debug('Running with gui.')
         app = QApplication(sys.argv)

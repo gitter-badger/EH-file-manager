@@ -13,3 +13,4 @@ To get current development:
 Dependencies on Ubuntu/Mint 13.10:
 
     sudo apt-get install python python-sqlite python-qt4
+    sudo pip install requests
