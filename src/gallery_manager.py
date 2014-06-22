@@ -131,13 +131,37 @@ class GalleryManager():
         """
         info = self.dbmodel.get_files_by_hash(filehash)
         return info
+    
+    # TODO - finish this
+    def search(self, searchstring):
+        """
+        Returns filtered list of files
+        """
+        searchstring = searchstring.lower()
+        all_files = self.dbmodel.get_files()
         
-    def get_files(self):
-        """
-        Returns all fileinfo in database
-        """
-        info = self.dbmodel.get_files()
-        return info
+        filtered = []
+        for f in all_files:
+            title = f[2].lower()
+            title_jpn = f[3].lower()
+            category = f[4].lower()
+            tags = [w.replace('_',' ').lower() for w in f[5].split(' ')]         
+            
+            eq = False
+            if searchstring == title:
+                eq = True
+            if searchstring == title_jpn:
+                eq = True
+            if searchstring == category:
+                eq = True
+            if searchstring in tags:
+                eq = True
+                
+            if eq == True:
+                filtered.append(f)
+                        
+        return filtered
+        
         
         
         

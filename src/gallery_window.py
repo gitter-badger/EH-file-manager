@@ -22,7 +22,8 @@ class GalleryWindow(QMainWindow):
         self.resize(800, 500)
         self.initUI()        
         
-        self.load_file_list()
+        self.ui_searchbar.setText('')
+        self.search()
     
     def initUI(self):
         cw = QWidget()
@@ -71,8 +72,9 @@ class GalleryWindow(QMainWindow):
         self.ui_filelist.setColumnCount(4)
         colNames = QStringList()
         colNames.append("MD5 Hash")
-        colNames.append("Name [Eng]")
-        colNames.append("Name [Jp]")
+        colNames.append("Title")
+        colNames.append("Title [Jpn]")
+        colNames.append("Category")
         colNames.append("Tags")
         self.ui_filelist.setHeaderLabels(colNames)
         self.ui_filelist.hideColumn(0) # hide column with hashes
@@ -85,18 +87,15 @@ class GalleryWindow(QMainWindow):
         self.layout_info.setSpacing(5)
         
         self.ui_info_name_eng = QLabel()
-        self.ui_info_name_eng.setText('Name[Eng]: ')
         self.ui_info_name_jp = QLabel()
-        self.ui_info_name_jp.setText('Name[Jp]: ')
+        self.ui_info_category = QLabel()
         self.ui_info_tags = QLabel()
-        self.ui_info_tags.setText('Tags: ')
         self.ui_info_filename = QLabel()
-        self.ui_info_filename.setText('Filename: ')
         self.ui_info_hash = QLabel()
-        self.ui_info_hash.setText('Hash: ')
         
         self.layout_info.addWidget(self.ui_info_name_eng)
         self.layout_info.addWidget(self.ui_info_name_jp)
+        self.layout_info.addWidget(self.ui_info_category)
         self.layout_info.addWidget(self.ui_info_tags)
         self.layout_info.addWidget(self.ui_info_filename)
         self.layout_info.addWidget(self.ui_info_hash)
@@ -126,9 +125,10 @@ class GalleryWindow(QMainWindow):
         logger.debug('Display info for -> '+filehash)
         fileinfo = self.manager.get_file_by_hash(filehash)[0]
         
-        self.ui_info_name_eng.setText('Name [Eng]: '+str(fileinfo[2]))
-        self.ui_info_name_jp.setText('Name [Jp]: '+str(fileinfo[3]))
-        self.ui_info_tags.setText('Tags: '+str(fileinfo[4]))
+        self.ui_info_name_eng.setText('Title: '+str(fileinfo[2]))
+        self.ui_info_name_jp.setText('Title [Jpn]: '+str(fileinfo[3]))
+        self.ui_info_category.setText('Category: '+str(fileinfo[4]))
+        self.ui_info_tags.setText('Tags: '+str(fileinfo[5]))
         self.ui_info_filename.setText('Filename: '+str(fileinfo[1]))
         self.ui_info_hash.setText('Hash: '+str(fileinfo[0]))
         
@@ -145,19 +145,20 @@ class GalleryWindow(QMainWindow):
         
     # TODO - finish this
     def search(self):
-        searchstring = self.ui_searchbar.text()
-        print searchstring
-        
-    def load_file_list(self):
         """
-        Displays all data from database in list
+        Displays filtered data from database
         """
-        files = self.manager.get_files()
+        searchstring = str(self.ui_searchbar.text())
+        logger.debug('Searching -> '+str(searchstring))
         
-        for f in files:
+        filteredlist = self.manager.search(searchstring)
+        
+        self.ui_filelist.clear()
+        for f in filteredlist:
             treeItem = QTreeWidgetItem(self.ui_filelist)
             treeItem.setText(0, f[0])
             treeItem.setText(1, f[2])
             treeItem.setText(2, f[3])
             treeItem.setText(3, f[4])
+            treeItem.setText(4, f[5])
 
