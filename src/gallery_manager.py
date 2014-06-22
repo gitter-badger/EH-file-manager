@@ -24,40 +24,40 @@ class GalleryManager():
         self.dbmodel = None
         
         if self.gallerypath is not None:
-            self.open_path(self.gallerypath)
+            self.openPath(self.gallerypath)
             
     def close(self):
         """
         Closes connection to gallery.
         """
-        self.dbmodel.close_database()
+        self.dbmodel.closeDatabase()
     
-    def open_path(self, path):
+    def openPath(self, path):
         """
         Open path as a gallery and creates connection to its database. If path is not gallery creates empty gallery structure.
         """
-        self.gallerypath = path
+        self.gallerypath = os.path.abspath(path)
         # checks if path is existing gallery. if not creates one.
-        if self.is_gallery(self.gallerypath) is False:
-            self.init_gallery(self.gallerypath)
+        if self.isGallery(self.gallerypath) is False:
+            self.initGallery(self.gallerypath)
             
         # open connection to database
         self.dbmodel = DatabaseModel(self.gallerypath, configdir=self.configdir)
-        self.dbmodel.open_database()   
+        self.dbmodel.openDatabase()   
     
     # TODO - propper check
-    def is_gallery(self, path):
+    def isGallery(self, path):
         """
         Checks if path leads to existing gallery.
         """
         if os.path.isdir(os.path.join(path, self.configdir)) is True:
-            logger.debug('is_gallery: given path is existing gallery.')
+            logger.debug('isGallery: given path is existing gallery.')
             return True
         else:
-            logger.debug('is_gallery: given path is not gallery.')
+            logger.debug('isGallery: given path is not gallery.')
             return False
         
-    def init_gallery(self, path, destructive=False):
+    def initGallery(self, path, destructive=False):
         """
         Creates new gallery basic structure.
         """
@@ -65,9 +65,8 @@ class GalleryManager():
         
         # create folder structure
         os.mkdir(os.path.join(path, self.configdir))
-        os.mkdir(os.path.join(path, "Files"))
         
-    def info_from_ehentai_link(self, ehlink):
+    def infoFromEHentaiLink(self, ehlink):
         """
         Returns ehentai.org gallery metdata from gallery link.
         """
@@ -77,9 +76,9 @@ class GalleryManager():
         gallery_id = splited[0]
         gallery_token = splited[1]
         
-        return self.info_from_ehentai(gallery_id, gallery_token)
+        return self.infoFromEHentai(gallery_id, gallery_token)
     
-    def info_from_ehentai(self, gallery_id, gallery_token):
+    def infoFromEHentai(self, gallery_id, gallery_token):
         """
         Returns ehentai.org gallery metadata from gallery_id and gallery_token.
         http://ehwiki.org/wiki/API
@@ -92,7 +91,7 @@ class GalleryManager():
         
         return gallery_info 
     
-    def get_filehash(self, filepath):
+    def getHash(self, filepath):
         """
         Returns MD5 hash of file.
         """
@@ -109,27 +108,38 @@ class GalleryManager():
         
         return md5hash
         
-    def process_file(self, filepath):
+    def addFile(self, filepath):
         """
-        Add file to database
+        Add fileinfo to database
         """
         logger.debug('Processing file - '+str(filepath))
-        md5hash = self.get_filehash(filepath)
-        filename = os.path.basename(filepath)
-        names = {'eng':os.path.splitext(filename)[0],'jp':''}
+        md5hash = self.getHash(filepath)
         
-        self.dbmodel.add_file(md5hash, filename, names=names)
+        # get relative filepath to gallery path
+        commonprefix = os.path.commonprefix([self.gallerypath, filepath])
+        if commonprefix != self.gallerypath:
+            logger.error('File is not in child directory of gallery!!!'+ \
+                        '\nfilepath: '+str(filepath)+'\ngallerypath: '+ \
+                        str(self.gallerypath)+'\ncommonprefix: '+str(commonprefix))
+            return False
         
-    # TODO - not needed in end product
-    def get_file_info(self, filepath):
-        md5hash = self.get_filehash(filepath)
-        return self.get_file_by_hash(md5hash)
+        elif len(self.getFileByHash(md5hash))>0:
+            logger.error('File with same hash is already in database')
+            return False
         
-    def get_file_by_hash(self, filehash):
+        else:
+            names = {'eng':os.path.splitext(os.path.basename(filepath))[0],'jp':''}
+            filepath_rel = os.path.relpath(filepath, commonprefix)
+            logger.debug('File relative path -> '+str(filepath_rel))
+            
+            self.dbmodel.addFile(md5hash, filepath_rel, names=names)
+            return True
+        
+    def getFileByHash(self, filehash):
         """
         Returns fileinfo
         """
-        info = self.dbmodel.get_files_by_hash(filehash)
+        info = self.dbmodel.getFilesByHash(filehash)
         return info
     
     # TODO - finish this
@@ -138,7 +148,7 @@ class GalleryManager():
         Returns filtered list of files
         """
         searchstring = searchstring.lower()
-        all_files = self.dbmodel.get_files()
+        all_files = self.dbmodel.getFiles()
         
         filtered = []
         for f in all_files:

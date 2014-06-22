@@ -42,7 +42,13 @@ class GalleryWindow(QMainWindow):
         exitAction.setStatusTip('Exit application')
         exitAction.triggered.connect(self.closeEvent)
         
+        addFileAction = QtGui.QAction(QIcon.fromTheme("document-new"), '&Add file', self)
+        addFileAction.setShortcut('Ctrl+A')
+        addFileAction.setStatusTip('Add new file information to database')
+        addFileAction.triggered.connect(self.addFile)
+        
         fileMenu = menubar.addMenu('&File')
+        fileMenu.addAction(addFileAction)
         fileMenu.addAction(exitAction)
         
         searchMenu = menubar.addMenu('&Edit')
@@ -78,8 +84,8 @@ class GalleryWindow(QMainWindow):
         colNames.append("Tags")
         self.ui_filelist.setHeaderLabels(colNames)
         self.ui_filelist.hideColumn(0) # hide column with hashes
-        self.ui_filelist.itemPressed.connect(self.show_file_details)
-        self.ui_filelist.itemDoubleClicked.connect(self.open_file_in_reader)
+        self.ui_filelist.itemPressed.connect(self.showFileDetails)
+        self.ui_filelist.itemDoubleClicked.connect(self.openFileInReader)
         self.layout_main.addWidget(self.ui_filelist)
         
         # File details 
@@ -112,18 +118,17 @@ class GalleryWindow(QMainWindow):
     def closeEvent(self, event):
         """
         Runs when user tryes to close main window.
-        sys.exit(0) - to fix wierd bug, where process is not terminated.
         """
         self.manager.close()
-        sys.exit(0)
+        QtCore.QCoreApplication.instance().quit()
         
-    def show_file_details(self, treeItem):
+    def showFileDetails(self, treeItem):
         """
         When user clicks on item in list
         """
         filehash = str(treeItem.text(0))
         logger.debug('Display info for -> '+filehash)
-        fileinfo = self.manager.get_file_by_hash(filehash)[0]
+        fileinfo = self.manager.getFileByHash(filehash)[0]
         
         self.ui_info_name_eng.setText('Title: '+str(fileinfo[2]))
         self.ui_info_name_jp.setText('Title [Jpn]: '+str(fileinfo[3]))
@@ -132,17 +137,36 @@ class GalleryWindow(QMainWindow):
         self.ui_info_filename.setText('Filename: '+str(fileinfo[1]))
         self.ui_info_hash.setText('Hash: '+str(fileinfo[0]))
         
-    def open_file_in_reader(self, treeItem):
+    def openFileInReader(self, treeItem):
         """
         When user double clicks on item in list run external manga viewer (mcomix).
         """
         logger.debug('Opening file in external reader.')
         filehash = str(treeItem.text(0))
-        filename = self.manager.get_file_by_hash(filehash)[0][1]
-        filepath = os.path.join(os.path.join(self.gallerypath, "Files"), filename)
+        filepath_rel = self.manager.getFileByHash(filehash)[0][1]
+        filepath = os.path.join(self.gallerypath, filepath_rel)
         
         os.system("mcomix "+str(filepath))
         
+    def addFile(self):
+        """
+        Gui for adding new file to database
+        """
+        logger.debug('gui for adding new file to database')
+        
+        newfilepath = QFileDialog.getOpenFileName(
+                caption='Select Data File',
+                directory=self.gallerypath
+            )
+            
+        if newfilepath is not None:
+            newfilepath = str(newfilepath).encode("utf8")
+            self.manager.addFile(newfilepath)
+            self.ui_searchbar.setText('')
+            self.search()
+        else:
+            logger.debug('No filepath selected')
+            
     # TODO - finish this
     def search(self):
         """
