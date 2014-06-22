@@ -142,7 +142,6 @@ class GalleryManager():
             if eq == True:
                 filtered.append(f)
                         
-        print filtered
         return filtered
         
     def updateFileInfo(self, filehash, newinfo):

@@ -166,12 +166,12 @@ class GalleryWindow(QMainWindow):
             logger.debug('Display info for -> '+self.selectedFile)
             fileinfo = self.manager.getFileByHash(self.selectedFile)[0]
             
-            self.ui_info_name_eng.setText('Title: '+unicode(fileinfo['title']).encode("utf8"))
-            self.ui_info_name_jp.setText('Title [Jpn]: '+unicode(fileinfo['title_jpn']).encode("utf8"))
-            self.ui_info_category.setText('Category: '+unicode(fileinfo['category']).encode("utf8"))
-            self.ui_info_tags.setText('Tags: '+unicode(fileinfo['tags']).encode("utf8"))
-            self.ui_info_filename.setText('Filepath: '+unicode(fileinfo['filepath']).encode("utf8"))
-            self.ui_info_hash.setText('Hash: '+unicode(fileinfo['hash']).encode("utf8"))
+            self.ui_info_name_eng.setText('Title: '+fileinfo['title'])
+            self.ui_info_name_jp.setText('Title [Jpn]: '+fileinfo['title_jpn'])
+            self.ui_info_category.setText('Category: '+fileinfo['category'])
+            self.ui_info_tags.setText('Tags: '+', '.join(fileinfo['tags']))
+            self.ui_info_filename.setText('Filepath: '+fileinfo['filepath'])
+            self.ui_info_hash.setText('Hash: '+fileinfo['hash'])
         
     def openFileInReader(self, treeItem):
         """
@@ -216,11 +216,11 @@ class GalleryWindow(QMainWindow):
         self.ui_filelist.clear()
         for f in filteredlist:
             treeItem = QTreeWidgetItem(self.ui_filelist)
-            treeItem.setText(0, unicode(f['hash']).encode("utf8"))
-            treeItem.setText(1, unicode(f['title']).encode("utf8"))
-            treeItem.setText(2, unicode(f['title_jpn']).encode("utf8"))
-            treeItem.setText(3, unicode(f['category']).encode("utf8"))
-            treeItem.setText(4, unicode(', '.join(f['tags'])).encode("utf8"))
+            treeItem.setText(0, f['hash'])
+            treeItem.setText(1, f['title'])
+            treeItem.setText(2, f['title_jpn'])
+            treeItem.setText(3, f['category'])
+            treeItem.setText(4, ', '.join(f['tags']))
         
         self.selectedFile = None
         self.showFileDetails()

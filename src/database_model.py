@@ -90,8 +90,8 @@ class DatabaseModel():
         # convert tags to string
         fileinfo['tags'] = self.tagsToString(fileinfo['tags'])
                 
-        query = "INSERT INTO Files VALUES ('"+fileinfo['hash']+"', '"+fileinfo['filepath']+"', '"+fileinfo['title']+"', '"+fileinfo['title_jpn']+"', '"+fileinfo['category']+"', '"+fileinfo['tags']+"' )"
-        logger.debug('SQLite newfile query: '+str(query))
+        query = unicode("INSERT INTO Files VALUES ('"+fileinfo['hash']+"', '"+fileinfo['filepath']+"', '"+fileinfo['title']+"', '"+fileinfo['title_jpn']+"', '"+fileinfo['category']+"', '"+fileinfo['tags']+"' )").encode("utf8")
+        logger.debug('SQLite newfile query: '+query)
         
         self.litecursor.execute(query)
         self.liteconnection.commit()
@@ -130,8 +130,8 @@ class DatabaseModel():
         # convert tags to string
         newinfo['tags'] = self.tagsToString(newinfo['tags'])
         
-        query = "UPDATE Files SET filepath='"+newinfo['filepath']+"', title='"+newinfo['title']+"', title_jpn='"+newinfo['title_jpn']+"', category='"+newinfo['category']+"', tags='"+newinfo['tags']+"' WHERE hash = '"+filehash+"' "
-        logger.debug('SQLite updatefile query: '+unicode(query).encode("utf8"))
+        query = unicode("UPDATE Files SET filepath='"+newinfo['filepath']+"', title='"+newinfo['title']+"', title_jpn='"+newinfo['title_jpn']+"', category='"+newinfo['category']+"', tags='"+newinfo['tags']+"' WHERE hash = '"+filehash+"' ").encode("utf8")
+        logger.debug('SQLite updatefile query: '+query)
         
         self.litecursor.execute(query)
         self.liteconnection.commit()
