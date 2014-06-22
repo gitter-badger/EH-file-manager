@@ -78,17 +78,18 @@ class GalleryWindow(QMainWindow):
         
         # File list
         self.ui_filelist = QTreeWidget()
-        self.ui_filelist.setColumnCount(4)
+        self.ui_filelist.setColumnCount(2)
         colNames = QStringList()
         colNames.append("MD5 Hash")
-        colNames.append("Title")
-        colNames.append("Title [Jpn]")
         colNames.append("Category")
-        colNames.append("Tags")
+        colNames.append("Title")
         self.ui_filelist.setHeaderLabels(colNames)
         self.ui_filelist.hideColumn(0) # hide column with hashes
+        self.ui_filelist.resizeColumnToContents(1) # set category to min width
+        
         self.ui_filelist.itemPressed.connect(self.selectFile)
         self.ui_filelist.itemDoubleClicked.connect(self.openFileInReader)
+        
         self.ui_layout.addWidget(self.ui_filelist, 1)
         
         # File details 
@@ -218,10 +219,8 @@ class GalleryWindow(QMainWindow):
         for f in filteredlist:
             treeItem = QTreeWidgetItem(self.ui_filelist)
             treeItem.setText(0, f['hash'])
-            treeItem.setText(1, f['title'])
-            treeItem.setText(2, f['title_jpn'])
-            treeItem.setText(3, f['category'])
-            treeItem.setText(4, ', '.join(f['tags']))
+            treeItem.setText(1, f['category'])
+            treeItem.setText(2, f['title'])
         
         self.selectedFile = None
         self.showFileDetails()
