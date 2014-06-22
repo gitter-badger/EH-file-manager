@@ -56,7 +56,7 @@ def main():
                 name = raw_input("Write name of file:\n")
                 print gallery.get_file_info(os.path.join(filefolder, name))
                 
-        #print gallery.info_from_ehentai_link('http://g.e-hentai.org/g/618395/0439fa3666/')
+        print gallery.info_from_ehentai_link('http://g.e-hentai.org/g/618395/0439fa3666/')
     else:
         logger.debug('Running with gui.')
         app = QApplication(sys.argv)

@@ -68,6 +68,9 @@ class GalleryManager():
         os.mkdir(os.path.join(path, "Files"))
         
     def info_from_ehentai_link(self, ehlink):
+        """
+        Returns ehentai.org gallery metdata from gallery link.
+        """
         index = ehlink.find('hentai.org/g/')
         splited = ehlink[(index+13):].split('/')
         
@@ -78,18 +81,20 @@ class GalleryManager():
     
     def info_from_ehentai(self, gallery_id, gallery_token):
         """
+        Returns ehentai.org gallery metadata from gallery_id and gallery_token.
         http://ehwiki.org/wiki/API
         """
         payload = json.dumps({'method': 'gdata', 'gidlist': [[gallery_id, gallery_token]]})
         headers = {'content-type': 'application/json'}
         
         r = requests.post("http://g.e-hentai.org/api.php", data=payload, headers=headers)
+        gallery_info = r.json()['gmetadata'][0]
         
-        return r.json()
+        return gallery_info 
     
     def get_filehash(self, filepath):
         """
-        Returns file MD5 hash.
+        Returns MD5 hash of file.
         """
         
         afile = open(filepath, 'rb')
@@ -105,6 +110,9 @@ class GalleryManager():
         return md5hash
         
     def process_file(self, filepath):
+        """
+        Add file to database
+        """
         logger.debug('Processing file - '+str(filepath))
         md5hash = self.get_filehash(filepath)
         filename = os.path.basename(filepath)
@@ -118,12 +126,18 @@ class GalleryManager():
         return self.get_file_by_hash(md5hash)
         
     def get_file_by_hash(self, filehash):
+        """
+        Returns fileinfo
+        """
         info = self.dbmodel.get_files_by_hash(filehash)
         return info
         
     def get_files(self):
+        """
+        Returns all fileinfo in database
+        """
         info = self.dbmodel.get_files()
         return info
         
-    def update_file(self, filehash):
-        pass
+        
+        

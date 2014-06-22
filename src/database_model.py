@@ -44,14 +44,14 @@ class DatabaseModel():
         """
         liteconnection = sqlite3.connect(self.dbpath)
         litecursor = liteconnection.cursor()
-        litecursor.execute("CREATE TABLE Files (hash text, filename text, name_eng text, name_jp text, tags text)")
+        litecursor.execute("CREATE TABLE Files (hash text, filename text, title text, title_jpn text, category text, tags text)")
         liteconnection.commit()
         liteconnection.close()
         
-    def add_file(self, filehash, filename, names={'eng':'','jp':''}, tags=[]):
+    def add_file(self, filehash, filename, names={'eng':'','jp':''}, category='Manga', tags=[]):
         tags_processed = ' '.join(tags)
                 
-        query = "INSERT INTO Files VALUES ('"+filehash+"', '"+filename+"', '"+str(names['eng'])+"', '"+str(names['jp'])+"', '"+tags_processed+"' )"
+        query = "INSERT INTO Files VALUES ('"+filehash+"', '"+filename+"', '"+str(names['eng'])+"', '"+str(names['jp'])+"', '"+str(category)+"', '"+tags_processed+"' )"
         logger.debug('SQLite newfile query: '+str(query))
         
         self.litecursor.execute(query)

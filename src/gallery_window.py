@@ -27,24 +27,44 @@ class GalleryWindow(QMainWindow):
     def initUI(self):
         cw = QWidget()
         self.setCentralWidget(cw)
-        self.ui_layout = QHBoxLayout()
-        self.ui_layout.setSpacing(15)
+        self.ui_layout = QVBoxLayout()
+        self.ui_layout.setSpacing(5)
         
         # status bar
         self.statusBar().showMessage('Ready')
         
         # menubar
+        menubar = self.menuBar()
+        
         exitAction = QtGui.QAction(QIcon.fromTheme("application-exit"), '&Exit', self)        
         exitAction.setShortcut('Ctrl+Q')
         exitAction.setStatusTip('Exit application')
         exitAction.triggered.connect(self.closeEvent)
         
-        menubar = self.menuBar()
         fileMenu = menubar.addMenu('&File')
         fileMenu.addAction(exitAction)
         
-        searchMenu = menubar.addMenu('&Search')
-        #searchMenu.addAction(exitAction)
+        searchMenu = menubar.addMenu('&Edit')
+        
+        helpMenu = menubar.addMenu('&Help')
+        
+        # Search bar
+        self.layout_search = QHBoxLayout()
+        self.layout_search.setSpacing(5)
+        
+        self.ui_searchbar = QLineEdit()
+        self.ui_searchbar.returnPressed.connect(self.search)
+        self.ui_searchbutton = QPushButton('Search')
+        self.ui_searchbutton.pressed.connect(self.search)
+        
+        self.layout_search.addWidget(self.ui_searchbar)
+        self.layout_search.addWidget(self.ui_searchbutton)
+        
+        self.ui_layout.addLayout(self.layout_search)
+        
+        # File list and details layout
+        self.layout_main = QHBoxLayout()
+        self.layout_main.setSpacing(15)
         
         # File list
         self.ui_filelist = QTreeWidget()
@@ -58,7 +78,7 @@ class GalleryWindow(QMainWindow):
         self.ui_filelist.hideColumn(0) # hide column with hashes
         self.ui_filelist.itemPressed.connect(self.show_file_details)
         self.ui_filelist.itemDoubleClicked.connect(self.open_file_in_reader)
-        self.ui_layout.addWidget(self.ui_filelist)
+        self.layout_main.addWidget(self.ui_filelist)
         
         # File details 
         self.layout_info = QVBoxLayout()
@@ -82,9 +102,10 @@ class GalleryWindow(QMainWindow):
         self.layout_info.addWidget(self.ui_info_hash)
         self.layout_info.addStretch()
         
-        self.ui_layout.addLayout(self.layout_info)
+        self.layout_main.addLayout(self.layout_info)
         
         # add layout to main window
+        self.ui_layout.addLayout(self.layout_main)
         cw.setLayout(self.ui_layout)
         self.setWindowTitle('Man2 - Manga Manager')
         self.show()
@@ -121,6 +142,11 @@ class GalleryWindow(QMainWindow):
         filepath = os.path.join(os.path.join(self.gallerypath, "Files"), filename)
         
         os.system("mcomix "+str(filepath))
+        
+    # TODO - finish this
+    def search(self):
+        searchstring = self.ui_searchbar.text()
+        print searchstring
         
     def load_file_list(self):
         """
