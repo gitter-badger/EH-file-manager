@@ -17,6 +17,7 @@ class GalleryWindow(QMainWindow):
     def __init__(self, gallerypath):
         self.gallerypath = gallerypath
         self.manager = GalleryManager(self.gallerypath)
+        self.selectedFile = None
         
         QMainWindow.__init__(self)   
         self.resize(800, 500)
@@ -47,11 +48,17 @@ class GalleryWindow(QMainWindow):
         addFileAction.setStatusTip('Add new file information to database')
         addFileAction.triggered.connect(self.addFile)
         
+        updateFileAction = QtGui.QAction(QIcon.fromTheme("network-wired"), '&Info from URL', self) 
+        updateFileAction.setShortcut('Ctrl+W')
+        updateFileAction.setStatusTip('Updates files info with information from URL link')
+        updateFileAction.triggered.connect(self.updateInfoFromLink)
+        
         fileMenu = menubar.addMenu('&File')
         fileMenu.addAction(addFileAction)
+        fileMenu.addAction(updateFileAction)
         fileMenu.addAction(exitAction)
         
-        searchMenu = menubar.addMenu('&Edit')
+        editMenu = menubar.addMenu('&Edit')
         
         helpMenu = menubar.addMenu('&Help')
         
@@ -84,7 +91,7 @@ class GalleryWindow(QMainWindow):
         colNames.append("Tags")
         self.ui_filelist.setHeaderLabels(colNames)
         self.ui_filelist.hideColumn(0) # hide column with hashes
-        self.ui_filelist.itemPressed.connect(self.showFileDetails)
+        self.ui_filelist.itemPressed.connect(self.selectFile)
         self.ui_filelist.itemDoubleClicked.connect(self.openFileInReader)
         self.layout_main.addWidget(self.ui_filelist)
         
@@ -117,25 +124,54 @@ class GalleryWindow(QMainWindow):
         
     def closeEvent(self, event):
         """
-        Runs when user tryes to close main window.
+        Runs when user tries to close main window.
         """
         self.manager.close()
         QtCore.QCoreApplication.instance().quit()
         
-    def showFileDetails(self, treeItem):
+    def updateInfoFromLink(self):
+        """
+        Updates files info with information from URL link.
+        """
+        if self.selectedFile is None:
+            logger.debug('No file selected, nothing to update.')
+        else:
+            url = QInputDialog.getText(self, 'Update file info from url', 'Enter ehentai.org gallery link:')
+            if url[1] == True:
+                self.manager.updateFileInfoEHentai(self.selectedFile, str(url[0]))
+                
+        self.search()
+        
+    def selectFile(self, treeItem):
         """
         When user clicks on item in list
         """
-        filehash = str(treeItem.text(0))
-        logger.debug('Display info for -> '+filehash)
-        fileinfo = self.manager.getFileByHash(filehash)[0]
+        self.selectedFile = str(treeItem.text(0))
+        self.showFileDetails()
         
-        self.ui_info_name_eng.setText('Title: '+str(fileinfo['title']))
-        self.ui_info_name_jp.setText('Title [Jpn]: '+str(fileinfo['title_jpn']))
-        self.ui_info_category.setText('Category: '+str(fileinfo['category']))
-        self.ui_info_tags.setText('Tags: '+str(fileinfo['tags']))
-        self.ui_info_filename.setText('Filepath: '+str(fileinfo['filepath']))
-        self.ui_info_hash.setText('Hash: '+str(fileinfo['hash']))
+    def showFileDetails(self):
+        """
+        Display info for selected file
+        """
+        if self.selectedFile is None:
+            logger.debug('No file selected, nothing to display.')
+            
+            self.ui_info_name_eng.setText('')
+            self.ui_info_name_jp.setText('')
+            self.ui_info_category.setText('')
+            self.ui_info_tags.setText('')
+            self.ui_info_filename.setText('')
+            self.ui_info_hash.setText('')
+        else:
+            logger.debug('Display info for -> '+self.selectedFile)
+            fileinfo = self.manager.getFileByHash(self.selectedFile)[0]
+            
+            self.ui_info_name_eng.setText('Title: '+unicode(fileinfo['title']).encode("utf8"))
+            self.ui_info_name_jp.setText('Title [Jpn]: '+unicode(fileinfo['title_jpn']).encode("utf8"))
+            self.ui_info_category.setText('Category: '+unicode(fileinfo['category']).encode("utf8"))
+            self.ui_info_tags.setText('Tags: '+unicode(fileinfo['tags']).encode("utf8"))
+            self.ui_info_filename.setText('Filepath: '+unicode(fileinfo['filepath']).encode("utf8"))
+            self.ui_info_hash.setText('Hash: '+unicode(fileinfo['hash']).encode("utf8"))
         
     def openFileInReader(self, treeItem):
         """
@@ -159,7 +195,7 @@ class GalleryWindow(QMainWindow):
                 directory=self.gallerypath
             )
             
-        if newfilepath is not None:
+        if (newfilepath is not None) and (newfilepath != ''):
             newfilepath = str(newfilepath).encode("utf8")
             self.manager.addFile(newfilepath)
             self.ui_searchbar.setText('')
@@ -180,9 +216,11 @@ class GalleryWindow(QMainWindow):
         self.ui_filelist.clear()
         for f in filteredlist:
             treeItem = QTreeWidgetItem(self.ui_filelist)
-            treeItem.setText(0, f['hash'])
-            treeItem.setText(1, f['title'])
-            treeItem.setText(2, f['title_jpn'])
-            treeItem.setText(3, str(f['category']))
-            treeItem.setText(4, str(f['tags']))
-
+            treeItem.setText(0, unicode(f['hash']).encode("utf8"))
+            treeItem.setText(1, unicode(f['title']).encode("utf8"))
+            treeItem.setText(2, unicode(f['title_jpn']).encode("utf8"))
+            treeItem.setText(3, unicode(f['category']).encode("utf8"))
+            treeItem.setText(4, unicode(', '.join(f['tags'])).encode("utf8"))
+        
+        self.selectedFile = None
+        self.showFileDetails()

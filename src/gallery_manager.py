@@ -124,22 +124,25 @@ class GalleryManager():
         """
         searchstring = searchstring.lower()
         all_files = self.dbmodel.getFiles()
-        
+
         filtered = []
         for f in all_files:
             eq = False
-            if searchstring == f['title']:
+            if searchstring == '':
                 eq = True
-            if searchstring == f['title_jpn']:
+            elif searchstring == f['title']:
                 eq = True
-            if searchstring == f['category']:
+            elif searchstring == f['title_jpn']:
                 eq = True
-            if searchstring in f['tags']:
+            elif searchstring == f['category']:
                 eq = True
-                
+            elif searchstring in f['tags']:
+                eq = True
+            
             if eq == True:
                 filtered.append(f)
                         
+        print filtered
         return filtered
         
     def updateFileInfo(self, filehash, newinfo):
@@ -154,6 +157,8 @@ class GalleryManager():
         
         gallery_id = splited[0]
         gallery_token = splited[1]
+        
+        logger.debug('EH id - '+str(gallery_id)+' token - '+str(gallery_token))
         
         return self.infoFromEHentai(gallery_id, gallery_token)
     
@@ -171,7 +176,10 @@ class GalleryManager():
         return gallery_info 
         
     def updateFileInfoEHentai(self, filehash, ehlink):
+        originfo = self.getFileByHash(filehash)[0]
         ehinfo = self.infoFromEHentaiLink(ehlink)
+        ehinfo['filepath'] = originfo['filepath']
+        
         self.updateFileInfo(filehash, ehinfo)
         
         

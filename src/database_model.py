@@ -126,11 +126,13 @@ class DatabaseModel():
         returned_data = self.litecursor.fetchall()
         return self.resultToDictionary(returned_data)
         
-    # TODO - finish this
     def updateFile(self, filehash, newinfo):
         # convert tags to string
         newinfo['tags'] = self.tagsToString(newinfo['tags'])
-        pass
         
-    
+        query = "UPDATE Files SET filepath='"+newinfo['filepath']+"', title='"+newinfo['title']+"', title_jpn='"+newinfo['title_jpn']+"', category='"+newinfo['category']+"', tags='"+newinfo['tags']+"' WHERE hash = '"+filehash+"' "
+        logger.debug('SQLite updatefile query: '+unicode(query).encode("utf8"))
+        
+        self.litecursor.execute(query)
+        self.liteconnection.commit()
         
