@@ -15,6 +15,7 @@ from gallery_manager import GalleryManager
 
 class GalleryWindow(QMainWindow):
     def __init__(self, gallerypath):
+        super(GalleryWindow, self).__init__()
         self.gallerypath = gallerypath
         self.manager = GalleryManager(self.gallerypath)
         self.selectedFile = None
@@ -30,7 +31,6 @@ class GalleryWindow(QMainWindow):
         cw = QWidget()
         self.setCentralWidget(cw)
         self.ui_layout = QVBoxLayout()
-        self.ui_layout.setSpacing(5)
         
         # status bar
         self.statusBar().showMessage('Ready')
@@ -76,10 +76,6 @@ class GalleryWindow(QMainWindow):
         
         self.ui_layout.addLayout(self.layout_search)
         
-        # File list and details layout
-        self.layout_main = QHBoxLayout()
-        self.layout_main.setSpacing(15)
-        
         # File list
         self.ui_filelist = QTreeWidget()
         self.ui_filelist.setColumnCount(4)
@@ -93,31 +89,36 @@ class GalleryWindow(QMainWindow):
         self.ui_filelist.hideColumn(0) # hide column with hashes
         self.ui_filelist.itemPressed.connect(self.selectFile)
         self.ui_filelist.itemDoubleClicked.connect(self.openFileInReader)
-        self.layout_main.addWidget(self.ui_filelist)
+        self.ui_layout.addWidget(self.ui_filelist, 1)
         
         # File details 
         self.layout_info = QVBoxLayout()
-        self.layout_info.setSpacing(5)
         
-        self.ui_info_name_eng = QLabel()
-        self.ui_info_name_jp = QLabel()
+        self.ui_info_title = QLabel()
+        self.ui_info_title_jpn = QLabel()
         self.ui_info_category = QLabel()
         self.ui_info_tags = QLabel()
         self.ui_info_filename = QLabel()
         self.ui_info_hash = QLabel()
         
-        self.layout_info.addWidget(self.ui_info_name_eng)
-        self.layout_info.addWidget(self.ui_info_name_jp)
+        self.ui_info_title.setWordWrap(True)
+        self.ui_info_title_jpn.setWordWrap(True)
+        self.ui_info_category.setWordWrap(True)
+        self.ui_info_tags.setWordWrap(True)
+        self.ui_info_filename.setWordWrap(True)
+        self.ui_info_hash.setWordWrap(True)
+        
+        self.layout_info.addWidget(self.ui_info_title)
+        self.layout_info.addWidget(self.ui_info_title_jpn)
         self.layout_info.addWidget(self.ui_info_category)
         self.layout_info.addWidget(self.ui_info_tags)
         self.layout_info.addWidget(self.ui_info_filename)
         self.layout_info.addWidget(self.ui_info_hash)
         self.layout_info.addStretch()
         
-        self.layout_main.addLayout(self.layout_info)
+        self.ui_layout.addLayout(self.layout_info)
         
         # add layout to main window
-        self.ui_layout.addLayout(self.layout_main)
         cw.setLayout(self.ui_layout)
         self.setWindowTitle('Man2 - Manga Manager')
         self.show()
@@ -156,8 +157,8 @@ class GalleryWindow(QMainWindow):
         if self.selectedFile is None:
             logger.debug('No file selected, nothing to display.')
             
-            self.ui_info_name_eng.setText('')
-            self.ui_info_name_jp.setText('')
+            self.ui_info_title.setText('')
+            self.ui_info_title_jpn.setText('')
             self.ui_info_category.setText('')
             self.ui_info_tags.setText('')
             self.ui_info_filename.setText('')
@@ -166,8 +167,8 @@ class GalleryWindow(QMainWindow):
             logger.debug('Display info for -> '+self.selectedFile)
             fileinfo = self.manager.getFileByHash(self.selectedFile)[0]
             
-            self.ui_info_name_eng.setText('Title: '+fileinfo['title'])
-            self.ui_info_name_jp.setText('Title [Jpn]: '+fileinfo['title_jpn'])
+            self.ui_info_title.setText('Title: '+fileinfo['title'])
+            self.ui_info_title_jpn.setText('Title [Jpn]: '+fileinfo['title_jpn'])
             self.ui_info_category.setText('Category: '+fileinfo['category'])
             self.ui_info_tags.setText('Tags: '+', '.join(fileinfo['tags']))
             self.ui_info_filename.setText('Filepath: '+fileinfo['filepath'])
@@ -182,7 +183,7 @@ class GalleryWindow(QMainWindow):
         filepath_rel = self.manager.getFileByHash(filehash)[0]['filepath']
         filepath = os.path.join(self.gallerypath, filepath_rel)
         
-        os.system("mcomix "+str(filepath))
+        os.system('mcomix "'+str(filepath)+'"')
         
     def addFile(self):
         """

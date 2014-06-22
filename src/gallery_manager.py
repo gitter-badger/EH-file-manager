@@ -122,7 +122,7 @@ class GalleryManager():
         """
         Returns filtered list of files
         """
-        searchstring = searchstring.lower()
+        searchstring = unicode(searchstring.lower()).encode("utf8")
         all_files = self.dbmodel.getFiles()
 
         filtered = []
