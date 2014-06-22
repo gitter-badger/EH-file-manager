@@ -65,31 +65,6 @@ class GalleryManager():
         
         # create folder structure
         os.mkdir(os.path.join(path, self.configdir))
-        
-    def infoFromEHentaiLink(self, ehlink):
-        """
-        Returns ehentai.org gallery metdata from gallery link.
-        """
-        index = ehlink.find('hentai.org/g/')
-        splited = ehlink[(index+13):].split('/')
-        
-        gallery_id = splited[0]
-        gallery_token = splited[1]
-        
-        return self.infoFromEHentai(gallery_id, gallery_token)
-    
-    def infoFromEHentai(self, gallery_id, gallery_token):
-        """
-        Returns ehentai.org gallery metadata from gallery_id and gallery_token.
-        http://ehwiki.org/wiki/API
-        """
-        payload = json.dumps({'method': 'gdata', 'gidlist': [[gallery_id, gallery_token]]})
-        headers = {'content-type': 'application/json'}
-        
-        r = requests.post("http://g.e-hentai.org/api.php", data=payload, headers=headers)
-        gallery_info = r.json()['gmetadata'][0]
-        
-        return gallery_info 
     
     def getHash(self, filepath):
         """
@@ -128,11 +103,11 @@ class GalleryManager():
             return False
         
         else:
-            names = {'eng':os.path.splitext(os.path.basename(filepath))[0],'jp':''}
+            title = os.path.splitext(os.path.basename(filepath))[0]
             filepath_rel = os.path.relpath(filepath, commonprefix)
             logger.debug('File relative path -> '+str(filepath_rel))
             
-            self.dbmodel.addFile(md5hash, filepath_rel, names=names)
+            self.dbmodel.addFile(filehash=md5hash, filepath=filepath_rel, title=title)
             return True
         
     def getFileByHash(self, filehash):
@@ -152,19 +127,14 @@ class GalleryManager():
         
         filtered = []
         for f in all_files:
-            title = f[2].lower()
-            title_jpn = f[3].lower()
-            category = f[4].lower()
-            tags = [w.replace('_',' ').lower() for w in f[5].split(' ')]         
-            
             eq = False
-            if searchstring == title:
+            if searchstring == f['title']:
                 eq = True
-            if searchstring == title_jpn:
+            if searchstring == f['title_jpn']:
                 eq = True
-            if searchstring == category:
+            if searchstring == f['category']:
                 eq = True
-            if searchstring in tags:
+            if searchstring in f['tags']:
                 eq = True
                 
             if eq == True:
@@ -172,6 +142,36 @@ class GalleryManager():
                         
         return filtered
         
+    def updateFileInfo(self, filehash, newinfo):
+        self.dbmodel.updateFile(filehash, newinfo)
+    
+    def infoFromEHentaiLink(self, ehlink):
+        """
+        Returns ehentai.org gallery metdata from gallery link.
+        """
+        index = ehlink.find('hentai.org/g/')
+        splited = ehlink[(index+13):].split('/')
         
+        gallery_id = splited[0]
+        gallery_token = splited[1]
+        
+        return self.infoFromEHentai(gallery_id, gallery_token)
+    
+    def infoFromEHentai(self, gallery_id, gallery_token):
+        """
+        Returns ehentai.org gallery metadata from gallery_id and gallery_token.
+        http://ehwiki.org/wiki/API
+        """
+        payload = json.dumps({'method': 'gdata', 'gidlist': [[gallery_id, gallery_token]]})
+        headers = {'content-type': 'application/json'}
+        
+        r = requests.post("http://g.e-hentai.org/api.php", data=payload, headers=headers)
+        gallery_info = r.json()['gmetadata'][0]
+        
+        return gallery_info 
+        
+    def updateFileInfoEHentai(self, filehash, ehlink):
+        ehinfo = self.infoFromEHentaiLink(ehlink)
+        self.updateFileInfo(filehash, ehinfo)
         
         

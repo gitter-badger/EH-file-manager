@@ -130,12 +130,12 @@ class GalleryWindow(QMainWindow):
         logger.debug('Display info for -> '+filehash)
         fileinfo = self.manager.getFileByHash(filehash)[0]
         
-        self.ui_info_name_eng.setText('Title: '+str(fileinfo[2]))
-        self.ui_info_name_jp.setText('Title [Jpn]: '+str(fileinfo[3]))
-        self.ui_info_category.setText('Category: '+str(fileinfo[4]))
-        self.ui_info_tags.setText('Tags: '+str(fileinfo[5]))
-        self.ui_info_filename.setText('Filename: '+str(fileinfo[1]))
-        self.ui_info_hash.setText('Hash: '+str(fileinfo[0]))
+        self.ui_info_name_eng.setText('Title: '+str(fileinfo['title']))
+        self.ui_info_name_jp.setText('Title [Jpn]: '+str(fileinfo['title_jpn']))
+        self.ui_info_category.setText('Category: '+str(fileinfo['category']))
+        self.ui_info_tags.setText('Tags: '+str(fileinfo['tags']))
+        self.ui_info_filename.setText('Filepath: '+str(fileinfo['filepath']))
+        self.ui_info_hash.setText('Hash: '+str(fileinfo['hash']))
         
     def openFileInReader(self, treeItem):
         """
@@ -143,7 +143,7 @@ class GalleryWindow(QMainWindow):
         """
         logger.debug('Opening file in external reader.')
         filehash = str(treeItem.text(0))
-        filepath_rel = self.manager.getFileByHash(filehash)[0][1]
+        filepath_rel = self.manager.getFileByHash(filehash)[0]['filepath']
         filepath = os.path.join(self.gallerypath, filepath_rel)
         
         os.system("mcomix "+str(filepath))
@@ -180,9 +180,9 @@ class GalleryWindow(QMainWindow):
         self.ui_filelist.clear()
         for f in filteredlist:
             treeItem = QTreeWidgetItem(self.ui_filelist)
-            treeItem.setText(0, f[0])
-            treeItem.setText(1, f[2])
-            treeItem.setText(2, f[3])
-            treeItem.setText(3, f[4])
-            treeItem.setText(4, f[5])
+            treeItem.setText(0, f['hash'])
+            treeItem.setText(1, f['title'])
+            treeItem.setText(2, f['title_jpn'])
+            treeItem.setText(3, str(f['category']))
+            treeItem.setText(4, str(f['tags']))
 

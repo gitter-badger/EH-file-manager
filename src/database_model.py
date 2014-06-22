@@ -48,26 +48,89 @@ class DatabaseModel():
         liteconnection.commit()
         liteconnection.close()
         
-    def addFile(self, filehash, filename, names={'eng':'','jp':''}, category='Manga', tags=[]):
-        tags_processed = ' '.join(tags)
+    def tagsToString(self, tags):
+        """
+        converts list of tags to string that can be inserted into database.
+        """
+        return ' '.join([t.replace(' ','_').lower() for t in tags])
+        
+    def stringToTags(self, tagstr):
+        """
+        Converts string gotten from database to list of tags.
+        """
+        if tagstr=='':
+            tagstr = []
+        else:
+            tagstr = [w.replace('_',' ').lower() for w in tagstr.split(' ')] 
+            
+        return tagstr
+        
+    def addFile(self, filehash, filepath, title, title_jpn='', category='Manga', tags=[]):
+        fileinfo = {
+                    'hash': str(filehash),
+                    'filepath': str(filepath),
+                    'title': str(title),
+                    'title_jpn': str(title_jpn),
+                    'category': str(category),
+                    'tags': []
+                    } 
+        self.addFileInfo(fileinfo)
+    
+    def addFileInfo(self, fileinfo):
+        """
+        fileinfo = {
+                    'hash': '',
+                    'filepath': '',
+                    'title': '',
+                    'title_jpn': '',
+                    'category': '',
+                    'tags': []
+                    }    
+        """ 
+        # convert tags to string
+        fileinfo['tags'] = self.tagsToString(fileinfo['tags'])
                 
-        query = "INSERT INTO Files VALUES ('"+filehash+"', '"+filename+"', '"+str(names['eng'])+"', '"+str(names['jp'])+"', '"+str(category)+"', '"+tags_processed+"' )"
+        query = "INSERT INTO Files VALUES ('"+fileinfo['hash']+"', '"+fileinfo['filepath']+"', '"+fileinfo['title']+"', '"+fileinfo['title_jpn']+"', '"+fileinfo['category']+"', '"+fileinfo['tags']+"' )"
         logger.debug('SQLite newfile query: '+str(query))
         
         self.litecursor.execute(query)
         self.liteconnection.commit()
     
+    def resultToDictionary(self, result):
+        """
+        returns fetched sqlresult as list of dictionaries
+        """
+        fileinfo = []
+        for i in range(0,len(result)):
+            fileinfo.append({
+                        'hash': result[i][0],
+                        'filepath': result[i][1],
+                        'title': result[i][2],
+                        'title_jpn': result[i][3],
+                        'category': result[i][4],
+                        'tags': result[i][5]
+                        })
+        
+        for r in fileinfo:
+            r['tags'] = self.stringToTags(r['tags'])
+                
+        return fileinfo
+    
     def getFiles(self):
         self.litecursor.execute("SELECT * FROM Files")
         returned_data = self.litecursor.fetchall()
-        
-        return returned_data
+        return self.resultToDictionary(returned_data)
     
     def getFilesByHash(self, filehash):
         self.litecursor.execute("SELECT * FROM Files WHERE hash = '"+filehash+"' ")
         returned_data = self.litecursor.fetchall()
+        return self.resultToDictionary(returned_data)
         
-        return returned_data
+    # TODO - finish this
+    def updateFile(self, filehash, newinfo):
+        # convert tags to string
+        newinfo['tags'] = self.tagsToString(newinfo['tags'])
+        pass
         
     
         
