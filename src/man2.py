@@ -37,7 +37,7 @@ def main():
         logger.setLevel(logging.WARNING)
     
     # TODO - REMOVE THIS
-    3print gallery.info_from_ehentai_link('http://g.e-hentai.org/g/618395/0439fa3666/')
+    #print gallery.info_from_ehentai_link('http://g.e-hentai.org/g/618395/0439fa3666/')
     
     # Run main app
     app = QApplication(sys.argv)
