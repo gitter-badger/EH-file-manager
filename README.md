@@ -22,3 +22,9 @@ License
 GPL2 - GNU GENERAL PUBLIC LICENSE, Version 2
 
 https://www.gnu.org/licenses/gpl-2.0.txt
+
+Changelog
+---------
+- 0.1
+
+first release
