@@ -48,14 +48,18 @@ class GalleryWindow(QMainWindow):
         addFileAction.setStatusTip('Add new file information to database')
         addFileAction.triggered.connect(self.addFile)
         
-        updateFileAction = QtGui.QAction(QIcon.fromTheme("network-wired"), '&Info from URL', self) 
-        updateFileAction.setShortcut('Ctrl+W')
-        updateFileAction.setStatusTip('Updates files info with information from URL link')
-        updateFileAction.triggered.connect(self.updateInfoFromLink)
+        updateFileAction_API = QtGui.QAction(QIcon.fromTheme("network-wireless"), '&Info from URL (API)', self) 
+        updateFileAction_API.setStatusTip('Updates files info with information from URL link (API)')
+        updateFileAction_API.triggered.connect(self.updateInfoFromLink_API)
+        
+        updateFileAction_HTML = QtGui.QAction(QIcon.fromTheme("network-wireless"), '&Info from URL (HTML)', self) 
+        updateFileAction_HTML.setStatusTip('Updates files info with information from URL link (HTML parser)')
+        updateFileAction_HTML.triggered.connect(self.updateInfoFromLink_HTML)
         
         fileMenu = menubar.addMenu('&File')
         fileMenu.addAction(addFileAction)
-        fileMenu.addAction(updateFileAction)
+        fileMenu.addAction(updateFileAction_API)
+        fileMenu.addAction(updateFileAction_HTML)
         fileMenu.addAction(exitAction)
         
         helpMenu = menubar.addMenu('&Help')
@@ -132,7 +136,14 @@ class GalleryWindow(QMainWindow):
         self.manager.close()
         QtCore.QCoreApplication.instance().quit()
         
-    def updateInfoFromLink(self):
+    
+    def updateInfoFromLink_API(self):    
+        self.updateInfoFromLink(api=True)
+        
+    def updateInfoFromLink_HTML(self): 
+        self.updateInfoFromLink(api=False)
+    
+    def updateInfoFromLink(self, api=False):
         """
         Updates files info with information from URL link.
         """
@@ -142,7 +153,7 @@ class GalleryWindow(QMainWindow):
         else:
             url = QInputDialog.getText(self, 'Update file info from url', 'Enter ehentai.org gallery link:')
             if url[1] == True:
-                self.manager.updateFileInfoEHentai(self.selectedFile, str(url[0]))
+                self.manager.updateFileInfoEHentai(self.selectedFile, str(url[0]), api)
                 self.search()
         
     def selectFile(self, treeItem):
@@ -172,7 +183,7 @@ class GalleryWindow(QMainWindow):
             self.ui_info_title.setText('Title: '+fileinfo['title'])
             self.ui_info_title_jpn.setText('Title [Jpn]: '+fileinfo['title_jpn'])
             self.ui_info_category.setText('Category: '+fileinfo['category'])
-            self.ui_info_tags.setText('Tags: '+', '.join(fileinfo['tags']))
+            self.ui_info_tags.setText('Tags: '+str(fileinfo['tags']))
             self.ui_info_filename.setText('Filepath: '+fileinfo['filepath'])
             self.ui_info_hash.setText('Hash: '+fileinfo['hash'])
         
@@ -206,7 +217,6 @@ class GalleryWindow(QMainWindow):
         else:
             logger.debug('No filepath selected')
             
-    # TODO - finish this
     def search(self):
         """
         Displays filtered data from database

@@ -10,6 +10,7 @@ import hashlib
 
 import requests
 import json
+from bs4 import BeautifulSoup
 
 from database_model import DatabaseModel
 
@@ -117,7 +118,7 @@ class GalleryManager():
         info = self.dbmodel.getFilesByHash(filehash)
         return info
     
-    # TODO - finish this
+    # TODO - finish this (rewrite with new tagging)
     def search(self, searchstring):
         """
         Returns filtered list of files
@@ -147,21 +148,24 @@ class GalleryManager():
     def updateFileInfo(self, filehash, newinfo):
         self.dbmodel.updateFile(filehash, newinfo)
     
-    def infoFromEHentaiLink(self, ehlink):
+    def infoFromEHentaiLink(self, ehlink, api=False):
         """
         Returns ehentai.org gallery metdata from gallery link.
         """
-        index = ehlink.find('hentai.org/g/')
-        splited = ehlink[(index+13):].split('/')
+        if api:
+            index = ehlink.find('hentai.org/g/')
+            splited = ehlink[(index+13):].split('/')
+            
+            gallery_id = splited[0]
+            gallery_token = splited[1]
+            
+            logger.debug('EH id - '+str(gallery_id)+' token - '+str(gallery_token))
+            
+            return self.infoFromEHentai_API(gallery_id, gallery_token)
+        else:
+            return self.infoFromEHentai_HTML(ehlink)
         
-        gallery_id = splited[0]
-        gallery_token = splited[1]
-        
-        logger.debug('EH id - '+str(gallery_id)+' token - '+str(gallery_token))
-        
-        return self.infoFromEHentai(gallery_id, gallery_token)
-    
-    def infoFromEHentai(self, gallery_id, gallery_token):
+    def infoFromEHentai_API(self, gallery_id, gallery_token):
         """
         Returns ehentai.org gallery metadata from gallery_id and gallery_token.
         http://ehwiki.org/wiki/API
@@ -172,11 +176,49 @@ class GalleryManager():
         r = requests.post("http://g.e-hentai.org/api.php", data=payload, headers=headers)
         gallery_info = r.json()['gmetadata'][0]
         
+        gallery_info['tags'] = {'misc':gallery_info['tags']}
+        
         return gallery_info 
         
-    def updateFileInfoEHentai(self, filehash, ehlink):
+    def infoFromEHentai_HTML(self, ehlink):
+        """
+        Returns ehentai.org gallery metadata parsed from html file.
+        """
+        fileinfo = {}
+        
+        r = requests.get(ehlink)
+        html = unicode(r.text).encode("utf8")
+        soup = BeautifulSoup(html)
+
+        div_gd2 = soup.body.find('div', attrs={'id':'gd2'})
+        fileinfo['title'] = div_gd2.find('h1', attrs={'id':'gn'}).text
+        fileinfo['title_jpn'] = div_gd2.find('h1', attrs={'id':'gj'}).text
+
+        div_gd3 = soup.body.find('div', attrs={'id':'gd3'})
+        fileinfo['category'] = div_gd3.find('img').get('alt')
+
+        left_text = div_gd3.find('div', attrs={'id':'gdd'}).text
+        fileinfo['language'] = left_text[left_text.find('Language:')+9:]
+
+        div_gd4 = soup.body.find('div', attrs={'id':'gd4'})
+        div_taglist = div_gd4.find('div', attrs={'id':'taglist'}).find_all('tr')
+        fileinfo['tags'] = {}
+        for tl in div_taglist:
+            tds = tl.find_all('td')
+            cat = tds[0].text[:tds[0].text.find(':')]
+            tags = [t.text for t in tds[1].find_all('a')] 
+            
+            fileinfo['tags'][cat] = tags
+
+        return fileinfo
+        
+    def updateFileInfoEHentai(self, filehash, ehlink, api=False):
+        # add schema to link
+        if not (ehlink.startswith('http://') or ehlink.startswith('https://')):
+            ehlink = 'http://'+ehlink
+        
         originfo = self.getFileByHash(filehash)[0]
-        ehinfo = self.infoFromEHentaiLink(ehlink)
+        ehinfo = self.infoFromEHentaiLink(ehlink, api)
         ehinfo['filepath'] = originfo['filepath']
         
         self.updateFileInfo(filehash, ehinfo)

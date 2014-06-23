@@ -52,18 +52,34 @@ class DatabaseModel():
         """
         converts list of tags to string that can be inserted into database.
         """
-        return ' '.join([t.replace(' ','_').lower() for t in tags])
+        tagstr = ''
+        for tc in tags:
+            tagstr+=' '+' '.join([str(tc).lower()+':'+t.replace(' ','_').lower() for t in tags[tc]])
+            
+        return tagstr.strip()
         
     def stringToTags(self, tagstr):
         """
         Converts string gotten from database to list of tags.
         """
-        if tagstr=='':
-            tagstr = []
-        else:
-            tagstr = [w.replace('_',' ').lower() for w in tagstr.split(' ')] 
+        tags = {}
+        if tagstr!='':
+            taglist = tagstr.split(' ')
+            for t in taglist:
+                splited = t.split(':')
+                if len(splited) == 1:
+                    cat = 'misc'
+                    tag = splited[0].replace('_',' ').lower()
+                else:
+                    cat = splited[0].lower()
+                    tag = splited[1].replace('_',' ').lower()
+                
+                if cat in tags:
+                    tags[cat].append(tag)
+                else:
+                    tags[cat] = [tag]
             
-        return tagstr
+        return tags
         
     def addFile(self, filehash, filepath, title, title_jpn='', category='Manga', tags=[]):
         fileinfo = {
@@ -72,7 +88,7 @@ class DatabaseModel():
                     'title': str(title),
                     'title_jpn': str(title_jpn),
                     'category': str(category),
-                    'tags': []
+                    'tags': {}
                     } 
         self.addFileInfo(fileinfo)
     
@@ -84,7 +100,7 @@ class DatabaseModel():
                     'title': '',
                     'title_jpn': '',
                     'category': '',
-                    'tags': []
+                    'tags': {}
                     }    
         """ 
         # convert tags to string

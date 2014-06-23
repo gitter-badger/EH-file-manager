@@ -13,4 +13,4 @@ To get current development:
 Dependencies on Ubuntu/Mint 13.10:
 
     sudo apt-get install python python-pip python-sqlite python-qt4 mcomix
-    sudo pip install requests
+    sudo pip install requests beautifulsoup4
