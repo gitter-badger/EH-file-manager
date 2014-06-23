@@ -56,10 +56,15 @@ class GalleryWindow(QMainWindow):
         updateFileAction_HTML.setStatusTip('Updates files info with information from URL link (HTML parser)')
         updateFileAction_HTML.triggered.connect(self.updateInfoFromLink_HTML)
         
+        removeFileAction = QtGui.QAction(QIcon.fromTheme("edit-delete"), '&Remove file', self)
+        removeFileAction.setStatusTip('Remove file from info database')
+        removeFileAction.triggered.connect(self.removeFile)
+        
         fileMenu = menubar.addMenu('&File')
         fileMenu.addAction(addFileAction)
         fileMenu.addAction(updateFileAction_API)
         fileMenu.addAction(updateFileAction_HTML)
+        fileMenu.addAction(removeFileAction)
         fileMenu.addAction(exitAction)
         
         helpMenu = menubar.addMenu('&Help')
@@ -212,10 +217,18 @@ class GalleryWindow(QMainWindow):
         if (newfilepath is not None) and (newfilepath != ''):
             newfilepath = str(newfilepath).encode("utf8")
             self.manager.addFile(newfilepath)
-            self.ui_searchbar.setText('')
             self.search()
         else:
             logger.debug('No filepath selected')
+            
+    def removeFile(self):
+        if self.selectedFile is None:
+            logger.debug('No file selected, nothing remove.')
+            QMessageBox.information(self, 'Message', 'No file selected, nothing remove.')
+        else:
+            self.manager.removeFile(str(self.selectedFile))
+            self.search()
+        
             
     def search(self):
         """

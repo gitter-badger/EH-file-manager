@@ -251,4 +251,7 @@ class GalleryManager():
         
         self.updateFileInfo(filehash, ehinfo)
         
+    def removeFile(self, filehash):
+        self.dbmodel.removeFile(filehash)
+        
         

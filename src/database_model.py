@@ -152,3 +152,9 @@ class DatabaseModel():
         self.litecursor.execute(query)
         self.liteconnection.commit()
         
+    def removeFile(self, filehash):
+        query = "DELETE FROM Files WHERE hash='"+filehash+"'"
+        logger.debug('SQLite delete query: '+query)
+        
+        self.litecursor.execute(query)
+        self.liteconnection.commit()
