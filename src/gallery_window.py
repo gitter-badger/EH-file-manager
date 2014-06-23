@@ -58,8 +58,6 @@ class GalleryWindow(QMainWindow):
         fileMenu.addAction(updateFileAction)
         fileMenu.addAction(exitAction)
         
-        editMenu = menubar.addMenu('&Edit')
-        
         helpMenu = menubar.addMenu('&Help')
         
         # Search bar
@@ -68,11 +66,14 @@ class GalleryWindow(QMainWindow):
         
         self.ui_searchbar = QLineEdit()
         self.ui_searchbar.returnPressed.connect(self.search)
-        self.ui_searchbutton = QPushButton('Search')
+        self.ui_searchbutton = QPushButton('Apply Filter')
         self.ui_searchbutton.pressed.connect(self.search)
+        self.ui_clearbutton = QPushButton('Clear Filter')
+        self.ui_clearbutton.pressed.connect(self.clearSearch)
         
         self.layout_search.addWidget(self.ui_searchbar)
         self.layout_search.addWidget(self.ui_searchbutton)
+        self.layout_search.addWidget(self.ui_clearbutton)
         
         self.ui_layout.addLayout(self.layout_search)
         
@@ -137,12 +138,12 @@ class GalleryWindow(QMainWindow):
         """
         if self.selectedFile is None:
             logger.debug('No file selected, nothing to update.')
+            QMessageBox.information(self, 'Message', 'No file selected, nothing to update.')
         else:
             url = QInputDialog.getText(self, 'Update file info from url', 'Enter ehentai.org gallery link:')
             if url[1] == True:
                 self.manager.updateFileInfoEHentai(self.selectedFile, str(url[0]))
-                
-        self.search()
+                self.search()
         
     def selectFile(self, treeItem):
         """
@@ -224,3 +225,10 @@ class GalleryWindow(QMainWindow):
         
         self.selectedFile = None
         self.showFileDetails()
+        
+    def clearSearch(self):
+        """
+        Displays list of all files in database
+        """
+        self.ui_searchbar.setText('')
+        self.search()

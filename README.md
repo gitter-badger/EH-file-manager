@@ -12,5 +12,5 @@ To get current development:
 
 Dependencies on Ubuntu/Mint 13.10:
 
-    sudo apt-get install python python-sqlite python-qt4 mcomix
+    sudo apt-get install python python-pip python-sqlite python-qt4 mcomix
     sudo pip install requests
