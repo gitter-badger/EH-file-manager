@@ -25,6 +25,6 @@ https://www.gnu.org/licenses/gpl-2.0.txt
 
 Changelog
 ---------
-- 0.1
+0.1
 
-first release
+- first release
