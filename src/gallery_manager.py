@@ -7,6 +7,7 @@ logger = logging.getLogger(__name__)
 import os
 import sys
 import hashlib
+import re
 
 import requests
 import json
@@ -123,25 +124,49 @@ class GalleryManager():
         """
         Returns filtered list of files
         """
-        searchstring = unicode(searchstring.lower()).encode("utf8")
         all_files = self.dbmodel.getFiles()
+        searchstring = unicode(searchstring.lower()).encode("utf8")
+        
+        
+        if searchstring=='':
+            filtered = all_files
+        else:
+            # split string (but ignore spaces inside "")
+            PATTERN = re.compile(r'''((?:[^\s"']|"[^"]*"|'[^']*')+)''')
+            search_strs = PATTERN.split(searchstring)[1::2]
 
-        filtered = []
-        for f in all_files:
-            eq = False
-            if searchstring == '':
-                eq = True
-            elif searchstring == f['title']:
-                eq = True
-            elif searchstring == f['title_jpn']:
-                eq = True
-            elif searchstring == f['category']:
-                eq = True
-            elif searchstring in f['tags']:
-                eq = True
-            
-            if eq == True:
-                filtered.append(f)
+            filtered = []
+            for f in all_files:
+                eq = False
+                for s in search_strs:
+                    # remove quotes and split (category:tag)
+                    s = s.replace('"', '').replace("'",'')
+                    s = s.split(':')
+                    
+                    if len(s) == 1:
+                        #no tag category
+                        s = s[0]
+                        
+                        if (s in f['title'].lower()) or (s in f['title_jpn'].lower()):
+                            eq = True
+                            
+                        for tag_c in f['tags']:
+                            if s in f['tags'][tag_c]:
+                                eq = True
+                        
+                        if eq == False:
+                            break
+                    else:
+                        #has tag category              
+                        if s[0] in f['tags']:
+                            if s[1] in f['tags'][s[0]]:
+                                eq = True
+                        
+                        if eq == False:
+                            break
+                            
+                if eq == True:
+                    filtered.append(f)
                         
         return filtered
         

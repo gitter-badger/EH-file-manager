@@ -69,10 +69,10 @@ class DatabaseModel():
                 splited = t.split(':')
                 if len(splited) == 1:
                     cat = 'misc'
-                    tag = splited[0].replace('_',' ').lower()
+                    tag = unicode(splited[0].replace('_',' ').lower()).encode("utf8")
                 else:
-                    cat = splited[0].lower()
-                    tag = splited[1].replace('_',' ').lower()
+                    cat = unicode(splited[0].lower()).encode("utf8")
+                    tag = unicode(splited[1].replace('_',' ').lower()).encode("utf8")
                 
                 if cat in tags:
                     tags[cat].append(tag)
