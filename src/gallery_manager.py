@@ -20,12 +20,12 @@ class GalleryManager():
     Main class of application
     """
     
-    def __init__(self, gallerypath=None, configdir='.config'):
-        self.gallerypath = gallerypath
-        self.configdir = configdir
+    def __init__(self, gallerypath='', configdir='.config'):
+        self.gallerypath = str(gallerypath)
+        self.configdir = str(configdir)
         self.dbmodel = None
         
-        if self.gallerypath is not None:
+        if self.gallerypath is not '':
             self.openPath(self.gallerypath)
             
     def close(self):
@@ -38,7 +38,7 @@ class GalleryManager():
         """
         Open path as a gallery and creates connection to its database. If path is not gallery creates empty gallery structure.
         """
-        self.gallerypath = os.path.abspath(path)
+        self.gallerypath = os.path.abspath(str(path))
         # checks if path is existing gallery. if not creates one.
         if self.isGallery(self.gallerypath) is False:
             self.initGallery(self.gallerypath)
@@ -52,6 +52,7 @@ class GalleryManager():
         """
         Checks if path leads to existing gallery.
         """
+        path = str(path)
         if os.path.isdir(os.path.join(path, self.configdir)) is True:
             logger.debug('isGallery: given path is existing gallery.')
             return True
@@ -119,10 +120,12 @@ class GalleryManager():
         info = self.dbmodel.getFilesByHash(filehash)
         return info
     
-    # TODO - finish this (rewrite with new tagging)
+    # TODO - finish this (- * % _) http://ehwiki.org/wiki/search
     def search(self, searchstring):
         """
         Returns filtered list of files
+        Example of searchstring:
+            male:glasses "fate zero" artist:"kosuke haruhito" blowjob
         """
         all_files = self.dbmodel.getFiles()
         searchstring = unicode(searchstring.lower()).encode("utf8")
