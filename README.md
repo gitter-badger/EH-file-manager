@@ -8,7 +8,7 @@ Install
 -------
 To get current development:
 
-    git clone https://github.com/kunesj/Man2.git
+    git clone https://github.com/kunesj/EH-file-manager.git
 
 Required dependencies on Linux Ubuntu/Mint 13.10:
 
