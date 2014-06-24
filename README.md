@@ -1,7 +1,5 @@
-Man2 
+EH file manager
 ======
-Man2 - MANga MANager [temp name]
-
 The goal of this little project it to create a manga managment system that could be fully used as off-line version of e-hentai.org gallery system.
 
 The main reason why was this project started, is that even though EH gallery system is very good at showing you what you want to find, its very hard to find the something in the heap of downloaded files you get after browsing the site for a while.
