@@ -131,7 +131,7 @@ class GalleryWindow(QMainWindow):
         
         # add layout to main window
         cw.setLayout(self.ui_layout)
-        self.setWindowTitle('Man2 - Manga Manager')
+        self.setWindowTitle('EH file manager')
         self.show()
         
     def closeEvent(self, event):
