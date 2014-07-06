@@ -150,6 +150,9 @@ class GalleryManager():
                         #no tag category
                         s = s[0]
                         
+                        if s in f['hash'].lower():
+                            eq = True
+                        
                         if (s in f['title'].lower()) or (s in f['title_jpn'].lower()):
                             eq = True
                             
@@ -163,6 +166,9 @@ class GalleryManager():
                         #has tag category              
                         if s[0] in f['tags']:
                             if s[1] in f['tags'][s[0]]:
+                                eq = True
+                        elif s[0] == 'hash':
+                            if s[1] in f['hash'].lower():
                                 eq = True
                         
                         if eq == False:
