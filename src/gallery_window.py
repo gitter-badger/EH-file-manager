@@ -263,7 +263,7 @@ class ShowDetails(QDialog):
         layout_main = QVBoxLayout()
         layout_main.setSpacing(2)
         
-        # Basic info
+        ## Basic info
         self.ui_title = QLabel('<b>Title:</b>  '+self.fileinfo['title'])
         self.ui_title_jpn = QLabel('<b>Title [Jpn]:</b>  '+self.fileinfo['title_jpn'])
         self.ui_category = QLabel('<b>Category:</b>  '+self.fileinfo['category'])
@@ -276,17 +276,28 @@ class ShowDetails(QDialog):
         layout_main.addWidget(self.ui_title_jpn)
         layout_main.addWidget(self.ui_category)
         
-        # Tags
+        ## Tags
         hr = QFrame()
         hr.setFrameShape(QFrame.HLine)
         layout_main.addWidget(hr)
         
-        for tc in self.fileinfo['tags']:
-            tags = QLabel('<b>'+tc+':</b> '+', '.join(self.fileinfo['tags'][tc]))
-            tags.setWordWrap(True)
-            layout_main.addWidget(tags)
+        main_namespaces = ['language', 'artist', 'group', 'male', 'female', 'misc']
         
-        # Setup layout
+        # standard tag namespaces
+        for tc in main_namespaces:
+            if tc in self.fileinfo['tags']:
+                tags = QLabel('<b>'+tc+':</b> '+', '.join(self.fileinfo['tags'][tc]))
+                tags.setWordWrap(True)
+                layout_main.addWidget(tags)
+        
+        # other non-standard tag namespaces
+        for tc in self.fileinfo['tags']:
+            if not (tc in main_namespaces):
+                tags = QLabel('<b>'+tc+':</b> '+', '.join(self.fileinfo['tags'][tc]))
+                tags.setWordWrap(True)
+                layout_main.addWidget(tags)
+        
+        ## Setup layout
         layout_main.addStretch()
         self.setLayout(layout_main)
         self.show()
@@ -315,7 +326,7 @@ class EditDetails(QDialog):
         layout_main.setSpacing(5)
         rstart = 0
         
-        # Fileinfo form - basic
+        ## Fileinfo form - basic
         self.line_title = QLineEdit(self.old_fileinfo['title'])
         self.line_title_jpn = QLineEdit(self.old_fileinfo['title_jpn'])
         self.line_category = QLineEdit(self.old_fileinfo['category'])
@@ -328,7 +339,7 @@ class EditDetails(QDialog):
         layout_main.addWidget(self.line_category, rstart + 2, 1)
         rstart+=3
         
-        # Fileinfo form - tags
+        ## Fileinfo form - tags
         # @TODO - new namespace
         hr = QFrame()
         hr.setFrameShape(QFrame.HLine)
@@ -336,34 +347,49 @@ class EditDetails(QDialog):
         layout_main.addWidget(hr, rstart + 0, 0, 1, 2)
         rstart+=1
         
+        main_namespaces = ['language', 'artist', 'group', 'male', 'female', 'misc']
         self.line_tags = {}
-        for tc in self.old_fileinfo['tags']:
-            self.line_tags[tc] = QLineEdit(', '.join(self.old_fileinfo['tags'][tc]))
-            
+        
+        # standard tag namespaces
+        for tc in main_namespaces:
+            if tc in self.old_fileinfo['tags']:
+                self.line_tags[tc] = QLineEdit(', '.join(self.old_fileinfo['tags'][tc]))
+            else:
+                self.line_tags[tc] = QLineEdit()
+                
             layout_main.addWidget(QLabel('<b>'+str(tc)+':</b> '), rstart + 0, 0)
             layout_main.addWidget(self.line_tags[tc], rstart + 0, 1)
             rstart+=1
         
-        # Buttons
-        hr2 = QFrame()
-        hr2.setFrameShape(QFrame.HLine)
+        # other non-standard tag namespaces
+        for tc in self.old_fileinfo['tags']:
+            if not (tc in main_namespaces):
+                self.line_tags[tc] = QLineEdit(', '.join(self.old_fileinfo['tags'][tc]))
+                
+                layout_main.addWidget(QLabel('<b>'+str(tc)+':</b> '), rstart + 0, 0)
+                layout_main.addWidget(self.line_tags[tc], rstart + 0, 1)
+                rstart+=1
+        
+        ## Buttons
+        hr3 = QFrame()
+        hr3.setFrameShape(QFrame.HLine)
         
         btn_close = QPushButton('Cencel')
         btn_close.pressed.connect(self.close)
         btn_edit = QPushButton('Edit')
         btn_edit.pressed.connect(self.edit)
         
-        layout_main.addWidget(hr2, rstart + 0, 0, 1, 2)
+        layout_main.addWidget(hr3, rstart + 0, 0, 1, 2)
         layout_main.addWidget(btn_close, rstart + 1, 0)
         layout_main.addWidget(btn_edit, rstart + 1, 1)
         rstart+=2
         
-        # Stretcher
+        ## Stretcher
         layout_main.addItem(QSpacerItem(0,0), rstart + 0, 0)
         layout_main.setRowStretch(rstart + 0, 1)
         rstart+=1
         
-        # Setup layout
+        ## Setup layout
         self.setLayout(layout_main)
         self.show()
     
@@ -376,8 +402,9 @@ class EditDetails(QDialog):
         
         self.new_fileinfo['tags'] = {}
         for tc in self.line_tags:
-            t_list = [t.strip() for t in str(self.line_tags[tc].text()).split(',')]
-            self.new_fileinfo['tags'][tc] = t_list
+            if str(self.line_tags[tc].text()).strip() != '':
+                t_list = [t.strip() for t in str(self.line_tags[tc].text()).split(',')]
+                self.new_fileinfo['tags'][tc] = t_list
         
         self.manager.updateFileInfo(self.filehash, self.new_fileinfo)
         self.close()
