@@ -329,7 +329,7 @@ class EditDetails(QDialog):
         rstart+=3
         
         # Fileinfo form - tags
-        # @TODO - finish this
+        # @TODO - new namespace
         hr = QFrame()
         hr.setFrameShape(QFrame.HLine)
         
@@ -338,8 +338,7 @@ class EditDetails(QDialog):
         
         self.line_tags = {}
         for tc in self.old_fileinfo['tags']:
-            self.line_tags[tc] = QLineEdit(str(self.old_fileinfo['tags'][tc]))
-            self.line_tags[tc].setEnabled(False)
+            self.line_tags[tc] = QLineEdit(', '.join(self.old_fileinfo['tags'][tc]))
             
             layout_main.addWidget(QLabel('<b>'+str(tc)+':</b> '), rstart + 0, 0)
             layout_main.addWidget(self.line_tags[tc], rstart + 0, 1)
@@ -369,12 +368,16 @@ class EditDetails(QDialog):
         self.show()
     
     def edit(self):
-        # @TODO - add tags update
         self.new_fileinfo = dict(self.old_fileinfo)
         
         self.new_fileinfo['title'] = self.line_title.text()
         self.new_fileinfo['title_jpn'] = self.line_title_jpn.text()
         self.new_fileinfo['category'] = self.line_category.text()
+        
+        self.new_fileinfo['tags'] = {}
+        for tc in self.line_tags:
+            t_list = [t.strip() for t in str(self.line_tags[tc].text()).split(',')]
+            self.new_fileinfo['tags'][tc] = t_list
         
         self.manager.updateFileInfo(self.filehash, self.new_fileinfo)
         self.close()
