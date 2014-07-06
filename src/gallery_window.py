@@ -48,6 +48,11 @@ class GalleryWindow(QMainWindow):
         addFileAction.setStatusTip('Add new file information to database')
         addFileAction.triggered.connect(self.addFile)
         
+        editFileAction = QtGui.QAction(QIcon.fromTheme("document-save"), '&Edit file', self)
+        editFileAction.setShortcut('Ctrl+E')
+        editFileAction.setStatusTip('Edit file information')
+        editFileAction.triggered.connect(self.editFile)
+        
         updateFileAction_API = QtGui.QAction(QIcon.fromTheme("network-wireless"), '&Info from URL (API)', self) 
         updateFileAction_API.setStatusTip('Updates files info with information from URL link (API)')
         updateFileAction_API.triggered.connect(self.updateInfoFromLink_API)
@@ -62,6 +67,7 @@ class GalleryWindow(QMainWindow):
         
         fileMenu = menubar.addMenu('&File')
         fileMenu.addAction(addFileAction)
+        fileMenu.addAction(editFileAction)
         fileMenu.addAction(updateFileAction_API)
         fileMenu.addAction(updateFileAction_HTML)
         fileMenu.addAction(removeFileAction)
@@ -223,12 +229,21 @@ class GalleryWindow(QMainWindow):
             
     def removeFile(self):
         if self.selectedFile is None:
-            logger.debug('No file selected, nothing remove.')
-            QMessageBox.information(self, 'Message', 'No file selected, nothing remove.')
+            logger.debug('No file selected, nothing to remove.')
+            QMessageBox.information(self, 'Message', 'No file selected, nothing to remove.')
         else:
             self.manager.removeFile(str(self.selectedFile))
             self.search()
         
+    def editFile(self):
+        if self.selectedFile is None:
+            logger.debug('No file selected, nothing to edit.')
+            QMessageBox.information(self, 'Message', 'No file selected, nothing to edit.')
+        else:
+            # @TODO - block main window when editing
+            app = EditDetails(self.manager, str(self.selectedFile))
+            app.exec_()
+            self.search()
             
     def search(self):
         """
@@ -255,3 +270,88 @@ class GalleryWindow(QMainWindow):
         """
         self.ui_searchbar.setText('')
         self.search()
+        
+class EditDetails(QDialog):
+    def __init__(self, manager, filehash):
+        self.manager = manager
+        self.filehash = filehash
+        self.old_fileinfo = self.manager.getFileByHash(self.filehash)[0]
+        self.new_fileinfo = {}
+        
+        QDialog.__init__(self)
+        self.initUI()
+        
+        self.resize(700, 50)
+        
+    def initUI(self):
+        self.setWindowTitle('Edit fileinfo')
+        
+        layout_main = QGridLayout()
+        layout_main.setSpacing(5)
+        rstart = 0
+        
+        # Fileinfo form - basic
+        self.line_title = QLineEdit(self.old_fileinfo['title'])
+        self.line_title_jpn = QLineEdit(self.old_fileinfo['title_jpn'])
+        self.line_category = QLineEdit(self.old_fileinfo['category'])
+        
+        layout_main.addWidget(QLabel('Title: '), rstart + 0, 0)
+        layout_main.addWidget(self.line_title, rstart + 0, 1)
+        layout_main.addWidget(QLabel('Title [Jpn]: '), rstart + 1, 0)
+        layout_main.addWidget(self.line_title_jpn, rstart + 1, 1)
+        layout_main.addWidget(QLabel('Category: '), rstart + 2, 0)
+        layout_main.addWidget(self.line_category, rstart + 2, 1)
+        rstart+=3
+        
+        # Fileinfo form - tags
+        # @TODO - finish this
+        hr = QFrame()
+        hr.setFrameShape(QFrame.HLine)
+        
+        layout_main.addWidget(hr, rstart + 0, 0, 1, 2)
+        rstart+=1
+        
+        self.line_tags = {}
+        for tc in self.old_fileinfo['tags']:
+            self.line_tags[tc] = QLineEdit(str(self.old_fileinfo['tags'][tc]))
+            self.line_tags[tc].setEnabled(False)
+            
+            layout_main.addWidget(QLabel(str(tc)+': '), rstart + 0, 0)
+            layout_main.addWidget(self.line_tags[tc], rstart + 0, 1)
+            rstart+=1
+        
+        # Buttons
+        hr2 = QFrame()
+        hr2.setFrameShape(QFrame.HLine)
+        
+        btn_close = QPushButton('Cencel')
+        btn_close.pressed.connect(self.close)
+        btn_edit = QPushButton('Edit')
+        btn_edit.pressed.connect(self.edit)
+        
+        layout_main.addWidget(hr2, rstart + 0, 0, 1, 2)
+        layout_main.addWidget(btn_close, rstart + 1, 0)
+        layout_main.addWidget(btn_edit, rstart + 1, 1)
+        rstart+=2
+        
+        # Stretcher
+        layout_main.addItem(QSpacerItem(0,0), rstart + 0, 0)
+        layout_main.setRowStretch(rstart + 0, 1)
+        rstart+=1
+        
+        # Setup layout
+        self.setLayout(layout_main)
+        self.show()
+    
+    def edit(self):
+        # @TODO - add tags update
+        self.new_fileinfo = dict(self.old_fileinfo)
+        
+        self.new_fileinfo['title'] = self.line_title.text()
+        self.new_fileinfo['title_jpn'] = self.line_title_jpn.text()
+        self.new_fileinfo['category'] = self.line_category.text()
+        
+        self.manager.updateFileInfo(self.filehash, self.new_fileinfo)
+        self.close()
+        
+        
