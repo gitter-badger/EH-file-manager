@@ -48,6 +48,7 @@ class GalleryWindow(QMainWindow):
         addFileAction.setStatusTip('Add new file information to database')
         addFileAction.triggered.connect(self.addFile)
         
+        # @TODO - edit icon
         editFileAction = QtGui.QAction(QIcon.fromTheme("document-save"), '&Edit file', self)
         editFileAction.setShortcut('Ctrl+E')
         editFileAction.setStatusTip('Edit file information')
@@ -109,31 +110,13 @@ class GalleryWindow(QMainWindow):
         self.ui_layout.addWidget(self.ui_filelist, 1)
         
         # File details 
-        self.layout_info = QVBoxLayout()
+        self.ui_layout_info = QVBoxLayout()
+        self.ui_layout_info.setSpacing(0)
         
-        self.ui_info_title = QLabel()
-        self.ui_info_title_jpn = QLabel()
-        self.ui_info_category = QLabel()
-        self.ui_info_tags = QLabel()
-        self.ui_info_filename = QLabel()
-        self.ui_info_hash = QLabel()
+        self.ui_info = ShowDetails(self.manager)
+        self.ui_layout_info.addWidget(self.ui_info)
         
-        self.ui_info_title.setWordWrap(True)
-        self.ui_info_title_jpn.setWordWrap(True)
-        self.ui_info_category.setWordWrap(True)
-        self.ui_info_tags.setWordWrap(True)
-        self.ui_info_filename.setWordWrap(True)
-        self.ui_info_hash.setWordWrap(True)
-        
-        self.layout_info.addWidget(self.ui_info_title)
-        self.layout_info.addWidget(self.ui_info_title_jpn)
-        self.layout_info.addWidget(self.ui_info_category)
-        self.layout_info.addWidget(self.ui_info_tags)
-        self.layout_info.addWidget(self.ui_info_filename)
-        self.layout_info.addWidget(self.ui_info_hash)
-        self.layout_info.addStretch()
-        
-        self.ui_layout.addLayout(self.layout_info)
+        self.ui_layout.addLayout(self.ui_layout_info)
         
         # add layout to main window
         cw.setLayout(self.ui_layout)
@@ -146,7 +129,6 @@ class GalleryWindow(QMainWindow):
         """
         self.manager.close()
         QtCore.QCoreApplication.instance().quit()
-        
     
     def updateInfoFromLink_API(self):    
         self.updateInfoFromLink(api=True)
@@ -178,25 +160,14 @@ class GalleryWindow(QMainWindow):
         """
         Display info for selected file
         """
-        if self.selectedFile is None:
-            logger.debug('No file selected, nothing to display.')
-            
-            self.ui_info_title.setText('')
-            self.ui_info_title_jpn.setText('')
-            self.ui_info_category.setText('')
-            self.ui_info_tags.setText('')
-            self.ui_info_filename.setText('')
-            self.ui_info_hash.setText('')
-        else:
-            logger.debug('Display info for -> '+self.selectedFile)
-            fileinfo = self.manager.getFileByHash(self.selectedFile)[0]
-            
-            self.ui_info_title.setText('Title: '+fileinfo['title'])
-            self.ui_info_title_jpn.setText('Title [Jpn]: '+fileinfo['title_jpn'])
-            self.ui_info_category.setText('Category: '+fileinfo['category'])
-            self.ui_info_tags.setText('Tags: '+str(fileinfo['tags']))
-            self.ui_info_filename.setText('Filepath: '+fileinfo['filepath'])
-            self.ui_info_hash.setText('Hash: '+fileinfo['hash'])
+        self.ui_layout_info.removeWidget(self.ui_info)
+        self.ui_info.close()
+        
+        self.ui_info = ShowDetails(self.manager, self.selectedFile)
+        
+        self.ui_layout_info.addWidget(self.ui_info)
+        self.ui_layout_info.update()
+        self.ui_layout.update()
         
     def openFileInReader(self, treeItem):
         """
@@ -271,6 +242,60 @@ class GalleryWindow(QMainWindow):
         self.ui_searchbar.setText('')
         self.search()
         
+class ShowDetails(QDialog):
+    def __init__(self, manager, filehash=None):
+        self.manager = manager
+        self.filehash = filehash
+        
+        QDialog.__init__(self)
+        
+        if self.filehash is None or str(self.filehash)=='':
+            logger.debug('No file selected, nothing to display.')
+            self.fileinfo = None
+            self.initUI_E()
+        else:
+            logger.debug('Display info for -> '+self.filehash)
+            self.fileinfo = self.manager.getFileByHash(self.filehash)[0]
+            logger.debug(str(self.fileinfo))
+            self.initUI()
+    
+    def initUI(self):
+        layout_main = QVBoxLayout()
+        layout_main.setSpacing(2)
+        
+        # Basic info
+        self.ui_title = QLabel('<b>Title:</b>  '+self.fileinfo['title'])
+        self.ui_title_jpn = QLabel('<b>Title [Jpn]:</b>  '+self.fileinfo['title_jpn'])
+        self.ui_category = QLabel('<b>Category:</b>  '+self.fileinfo['category'])
+        
+        self.ui_title.setWordWrap(True)
+        self.ui_title_jpn.setWordWrap(True)
+        self.ui_category.setWordWrap(True)
+        
+        layout_main.addWidget(self.ui_title)
+        layout_main.addWidget(self.ui_title_jpn)
+        layout_main.addWidget(self.ui_category)
+        
+        # Tags
+        hr = QFrame()
+        hr.setFrameShape(QFrame.HLine)
+        layout_main.addWidget(hr)
+        
+        for tc in self.fileinfo['tags']:
+            tags = QLabel('<b>'+tc+':</b> '+', '.join(self.fileinfo['tags'][tc]))
+            tags.setWordWrap(True)
+            layout_main.addWidget(tags)
+        
+        # Setup layout
+        layout_main.addStretch()
+        self.setLayout(layout_main)
+        self.show()
+        
+    def initUI_E(self):
+        layout_main = QVBoxLayout()
+        self.setLayout(layout_main)
+        self.show()
+        
 class EditDetails(QDialog):
     def __init__(self, manager, filehash):
         self.manager = manager
@@ -295,11 +320,11 @@ class EditDetails(QDialog):
         self.line_title_jpn = QLineEdit(self.old_fileinfo['title_jpn'])
         self.line_category = QLineEdit(self.old_fileinfo['category'])
         
-        layout_main.addWidget(QLabel('Title: '), rstart + 0, 0)
+        layout_main.addWidget(QLabel('<b>Title:</b> '), rstart + 0, 0)
         layout_main.addWidget(self.line_title, rstart + 0, 1)
-        layout_main.addWidget(QLabel('Title [Jpn]: '), rstart + 1, 0)
+        layout_main.addWidget(QLabel('<b>Title [Jpn]:</b> '), rstart + 1, 0)
         layout_main.addWidget(self.line_title_jpn, rstart + 1, 1)
-        layout_main.addWidget(QLabel('Category: '), rstart + 2, 0)
+        layout_main.addWidget(QLabel('<b>Category:</b> '), rstart + 2, 0)
         layout_main.addWidget(self.line_category, rstart + 2, 1)
         rstart+=3
         
@@ -316,7 +341,7 @@ class EditDetails(QDialog):
             self.line_tags[tc] = QLineEdit(str(self.old_fileinfo['tags'][tc]))
             self.line_tags[tc].setEnabled(False)
             
-            layout_main.addWidget(QLabel(str(tc)+': '), rstart + 0, 0)
+            layout_main.addWidget(QLabel('<b>'+str(tc)+':</b> '), rstart + 0, 0)
             layout_main.addWidget(self.line_tags[tc], rstart + 0, 1)
             rstart+=1
         
