@@ -398,12 +398,12 @@ class EditDetails(QDialog):
         
         self.new_fileinfo['title'] = self.line_title.text()
         self.new_fileinfo['title_jpn'] = self.line_title_jpn.text()
-        self.new_fileinfo['category'] = self.line_category.text()
+        self.new_fileinfo['category'] = str(self.line_category.text()).lower()
         
         self.new_fileinfo['tags'] = {}
         for tc in self.line_tags:
             if str(self.line_tags[tc].text()).strip() != '':
-                t_list = [t.strip() for t in str(self.line_tags[tc].text()).split(',')]
+                t_list = [t.strip() for t in str(self.line_tags[tc].text()).lower().split(',')]
                 self.new_fileinfo['tags'][tc] = t_list
         
         self.manager.updateFileInfo(self.filehash, self.new_fileinfo)
