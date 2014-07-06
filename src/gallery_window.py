@@ -281,7 +281,7 @@ class ShowDetails(QDialog):
         hr.setFrameShape(QFrame.HLine)
         layout_main.addWidget(hr)
         
-        main_namespaces = ['language', 'artist', 'group', 'male', 'female', 'misc']
+        main_namespaces = ['language', 'parody', 'character', 'group', 'artist', 'male', 'female', 'misc']
         
         # standard tag namespaces
         for tc in main_namespaces:
@@ -347,7 +347,7 @@ class EditDetails(QDialog):
         layout_main.addWidget(hr, rstart + 0, 0, 1, 2)
         rstart+=1
         
-        main_namespaces = ['language', 'artist', 'group', 'male', 'female', 'misc']
+        main_namespaces = ['language', 'parody', 'character', 'group', 'artist', 'male', 'female', 'misc']
         self.line_tags = {}
         
         # standard tag namespaces
