@@ -314,6 +314,11 @@ class ShowDetails(QDialog):
         self.ui_category.setWordWrap(True)
         layout_main.addWidget(self.ui_category)
         
+        # new file
+        self.ui_new = QLabel('<b>Newfile:</b>  '+str(self.fileinfo['new']))
+        self.ui_new.setWordWrap(True)
+        layout_main.addWidget(self.ui_new) 
+        
         ## Tags
         hr = QFrame()
         hr.setFrameShape(QFrame.HLine)
@@ -356,6 +361,13 @@ class EditDetails(QDialog):
         QDialog.__init__(self)
         self.initUI()
         
+        if self.old_fileinfo['new']:
+            self.new_bool = True
+            self.new_box.setCheckState(Qt.Checked)
+        else:
+            self.new_bool = False
+            self.new_box.setCheckState(Qt.Unchecked)
+        
         self.resize(700, 50)
         
     def initUI(self):
@@ -377,6 +389,13 @@ class EditDetails(QDialog):
         layout_main.addWidget(QLabel('<b>Category:</b> '), rstart + 2, 0)
         layout_main.addWidget(self.line_category, rstart + 2, 1)
         rstart+=3
+        
+        # newfile
+        self.new_box = QCheckBox('New file', self)
+        self.new_box.stateChanged.connect(self.new_box_changed)
+        
+        layout_main.addWidget(self.new_box, rstart + 0, 0, 1, 2)
+        rstart+=1
         
         ## Fileinfo form - tags
         # @TODO - new namespace
@@ -432,6 +451,12 @@ class EditDetails(QDialog):
         ## Setup layout
         self.setLayout(layout_main)
         self.show()
+        
+    def new_box_changed(self, state):    
+        if state == QtCore.Qt.Checked:
+            self.new_bool = True
+        else:
+            self.new_bool = False
     
     def edit(self):
         self.new_fileinfo = dict(self.old_fileinfo)
@@ -439,6 +464,7 @@ class EditDetails(QDialog):
         self.new_fileinfo['title'] = self.line_title.text()
         self.new_fileinfo['title_jpn'] = self.line_title_jpn.text()
         self.new_fileinfo['category'] = str(self.line_category.text()).lower()
+        self.new_fileinfo['new'] = self.new_bool
         
         self.new_fileinfo['tags'] = {}
         for tc in self.line_tags:

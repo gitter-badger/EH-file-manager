@@ -45,7 +45,7 @@ class DatabaseModel():
         """
         liteconnection = sqlite3.connect(self.dbpath)
         litecursor = liteconnection.cursor()
-        litecursor.execute("CREATE TABLE Files (hash text, filepath text, title text, title_jpn text, category text, tags text)")
+        litecursor.execute("CREATE TABLE Files (hash text, filepath text, title text, title_jpn text, category text, tags text, new bool)")
         liteconnection.commit()
         liteconnection.close()
         
@@ -89,7 +89,8 @@ class DatabaseModel():
                     'title': str(title),
                     'title_jpn': str(title_jpn),
                     'category': str(category),
-                    'tags': {}
+                    'tags': {},
+                    'new': 1
                     } 
         self.addFileInfo(fileinfo)
     
@@ -101,13 +102,14 @@ class DatabaseModel():
                     'title': '',
                     'title_jpn': '',
                     'category': '',
-                    'tags': {}
+                    'tags': {},
+                    'new': bool
                     }    
         """ 
         # convert tags to string
         fileinfo['tags'] = self.tagsToString(fileinfo['tags'])
                 
-        query = unicode("INSERT INTO Files VALUES ('"+fileinfo['hash']+"', '"+fileinfo['filepath']+"', '"+fileinfo['title']+"', '"+fileinfo['title_jpn']+"', '"+fileinfo['category']+"', '"+fileinfo['tags']+"' )").encode("utf8")
+        query = unicode("INSERT INTO Files VALUES ('"+fileinfo['hash']+"', '"+fileinfo['filepath']+"', '"+fileinfo['title']+"', '"+fileinfo['title_jpn']+"', '"+fileinfo['category']+"', '"+fileinfo['tags']+"', "+str(int(fileinfo['new']))+")").encode("utf8")
         logger.debug('SQLite newfile query: '+query)
         
         self.litecursor.execute(query)
@@ -125,7 +127,8 @@ class DatabaseModel():
                         'title': result[i][2],
                         'title_jpn': result[i][3],
                         'category': result[i][4],
-                        'tags': result[i][5]
+                        'tags': result[i][5],
+                        'new': bool(int(result[i][6]))
                         })
         
         for r in fileinfo:
@@ -147,7 +150,7 @@ class DatabaseModel():
         # convert tags to string
         newinfo['tags'] = self.tagsToString(newinfo['tags'])
         
-        query = unicode("UPDATE Files SET filepath='"+newinfo['filepath']+"', title='"+newinfo['title']+"', title_jpn='"+newinfo['title_jpn']+"', category='"+newinfo['category']+"', tags='"+newinfo['tags']+"' WHERE hash = '"+filehash+"' ").encode("utf8")
+        query = unicode("UPDATE Files SET filepath='"+newinfo['filepath']+"', title='"+newinfo['title']+"', title_jpn='"+newinfo['title_jpn']+"', category='"+newinfo['category']+"', tags='"+newinfo['tags']+"', new='"+str(int(newinfo['new']))+"' WHERE hash = '"+filehash+"' ").encode("utf8")
         logger.debug('SQLite updatefile query: '+query)
         
         self.litecursor.execute(query)

@@ -82,7 +82,8 @@ class GalleryManager():
         configpath = os.path.join(path, self.CONFIGDIR)
         
         # create config folder and files
-        os.mkdir(configpath)
+        if not os.path.isdir(configpath):
+            os.mkdir(configpath)
         DatabaseModel(configpath)
         setmod = Settings(configpath)
         setmod.loadSettings()
