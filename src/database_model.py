@@ -81,7 +81,7 @@ class DatabaseModel():
             
         return tags
         
-    def addFile(self, filehash, filepath, title, title_jpn='', category='Manga', tags=[]):
+    def addFile(self, filehash, filepath, title, title_jpn='', category='manga', tags=[]):
         fileinfo = {
                     'hash': str(filehash),
                     'filepath': str(filepath),

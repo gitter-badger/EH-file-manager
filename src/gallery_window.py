@@ -284,16 +284,18 @@ class ShowDetails(QDialog):
         layout_main.setSpacing(2)
         
         ## Basic info
-        self.ui_title = QLabel('<b>Title:</b>  '+self.fileinfo['title'])
-        self.ui_title_jpn = QLabel('<b>Title [Jpn]:</b>  '+self.fileinfo['title_jpn'])
+        if self.fileinfo['title']!='':
+            self.ui_title = QLabel('<b>Title:</b>  '+self.fileinfo['title'])
+            self.ui_title.setWordWrap(True)
+            layout_main.addWidget(self.ui_title)
+            
+        if self.fileinfo['title_jpn']!='':
+            self.ui_title_jpn = QLabel('<b>Title [Jpn]:</b>  '+self.fileinfo['title_jpn'])
+            self.ui_title_jpn.setWordWrap(True)
+            layout_main.addWidget(self.ui_title_jpn)
+            
         self.ui_category = QLabel('<b>Category:</b>  '+self.fileinfo['category'])
-        
-        self.ui_title.setWordWrap(True)
-        self.ui_title_jpn.setWordWrap(True)
         self.ui_category.setWordWrap(True)
-        
-        layout_main.addWidget(self.ui_title)
-        layout_main.addWidget(self.ui_title_jpn)
         layout_main.addWidget(self.ui_category)
         
         ## Tags
