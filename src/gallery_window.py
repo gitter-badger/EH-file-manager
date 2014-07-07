@@ -20,6 +20,10 @@ class GalleryWindow(QMainWindow):
         self.manager = GalleryManager(self.gallerypath)
         self.selectedFile = None
         
+        self.search_cfg = {
+                            'new':False
+                            }
+        
         QMainWindow.__init__(self)   
         self.resize(800, 500)
         self.initUI()        
@@ -36,9 +40,7 @@ class GalleryWindow(QMainWindow):
         self.statusBar().showMessage('Ready')
         
         # menubar
-        menubar = self.menuBar()
-        
-        
+        menubar = self.menuBar() 
         
         addFileAction = QtGui.QAction(QIcon.fromTheme("document-new"), 'Add file', self)
         addFileAction.setShortcut('Ctrl+A')
@@ -108,6 +110,17 @@ class GalleryWindow(QMainWindow):
         self.layout_search.addWidget(self.ui_clearbutton)
         
         self.ui_layout.addLayout(self.layout_search)
+        
+        # advanced search settings
+        self.layout_ad_search = QHBoxLayout()
+        self.layout_ad_search.setSpacing(5)
+        
+        self.ui_box_new = QCheckBox('Only new files', self)
+        self.ui_box_new.stateChanged.connect(self.box_new_changed)
+        
+        self.layout_ad_search.addWidget(self.ui_box_new)
+        
+        self.ui_layout.addLayout(self.layout_ad_search)
         
         # File list
         self.ui_filelist = QTreeWidget()
@@ -251,6 +264,12 @@ class GalleryWindow(QMainWindow):
         # @TODO - block main window when editing
         app = EditSettings(self.manager)
         app.exec_()
+        
+    def box_new_changed(self, state):    
+        if state == QtCore.Qt.Checked:
+            self.search_cfg['new'] = True
+        else:
+            self.search_cfg['new'] = False
             
     def search(self):
         """
@@ -259,7 +278,7 @@ class GalleryWindow(QMainWindow):
         searchstring = str(self.ui_searchbar.text())
         logger.debug('Searching -> '+str(searchstring))
         
-        filteredlist = self.manager.search(searchstring)
+        filteredlist = self.manager.search(searchstring, self.search_cfg)
         
         self.ui_filelist.clear()
         for f in filteredlist:

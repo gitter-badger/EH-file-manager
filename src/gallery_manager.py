@@ -191,7 +191,7 @@ class GalleryManager():
         return newfiles
             
     # TODO - finish this (- * % _) http://ehwiki.org/wiki/search
-    def search(self, searchstring):
+    def search(self, searchstring, search_cfg):
         """
         Returns filtered list of files
         Example of searchstring:
@@ -246,7 +246,15 @@ class GalleryManager():
                             
                 if eq == True:
                     filtered.append(f)
-                        
+                    
+        # filter by search settings
+        if search_cfg['new']:
+            filtered_new = []
+            for f in filtered:
+                if f['new']:
+                    filtered_new.append(f)
+            filtered = filtered_new           
+             
         return filtered
         
     def updateFileInfo(self, filehash, newinfo):
@@ -324,6 +332,7 @@ class GalleryManager():
         originfo = self.getFileByHash(filehash)[0]
         ehinfo = self.infoFromEHentaiLink(ehlink, api)
         ehinfo['filepath'] = originfo['filepath']
+        ehinfo['new'] = False
         
         self.updateFileInfo(filehash, ehinfo)
         
