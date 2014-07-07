@@ -66,8 +66,13 @@ class GalleryWindow(QMainWindow):
         removeFileAction.setStatusTip('Remove file from info database')
         removeFileAction.triggered.connect(self.removeFile)
         
+        findNewFilesAction = QtGui.QAction('Find new files', self)
+        findNewFilesAction.setStatusTip('Automatically find new files in gallery and add them to database')
+        findNewFilesAction.triggered.connect(self.findNewFiles)
+        
         fileMenu = menubar.addMenu('&File')
         fileMenu.addAction(addFileAction)
+        fileMenu.addAction(findNewFilesAction)
         fileMenu.addAction(editFileAction)
         fileMenu.addAction(updateFileAction_API)
         fileMenu.addAction(updateFileAction_HTML)
@@ -215,6 +220,17 @@ class GalleryWindow(QMainWindow):
             app = EditDetails(self.manager, str(self.selectedFile))
             app.exec_()
             self.search()
+            
+    def findNewFiles(self):
+        self.statusBar().showMessage('Searching for new files...')
+        QMessageBox.information(self, 'Find new files', 'Manager will now try to find new files.')
+        
+        newfiles = self.manager.addNewFiles()
+        
+        self.statusBar().showMessage('Ready')
+        QMessageBox.information(self, 'Find new files', 'Manager found '+str(newfiles)+' new files.')
+        
+        self.search()
             
     def search(self):
         """

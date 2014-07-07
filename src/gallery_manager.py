@@ -86,12 +86,13 @@ class GalleryManager():
         
         return md5hash
         
-    def addFile(self, filepath):
+    def addFile(self, filepath, filehash = None):
         """
         Add fileinfo to database
         """
         logger.debug('Processing file - '+str(filepath))
-        md5hash = self.getHash(filepath)
+        if filehash is None:
+            filehash = self.getHash(filepath)
         
         # get relative filepath to gallery path
         commonprefix = os.path.commonprefix([self.gallerypath, filepath])
@@ -101,7 +102,7 @@ class GalleryManager():
                         str(self.gallerypath)+'\ncommonprefix: '+str(commonprefix))
             return False
         
-        elif len(self.getFileByHash(md5hash))>0:
+        elif len(self.getFileByHash(filehash))>0:
             logger.error('File with same hash is already in database')
             return False
         
@@ -110,7 +111,7 @@ class GalleryManager():
             filepath_rel = os.path.relpath(filepath, commonprefix)
             logger.debug('File relative path -> '+str(filepath_rel))
             
-            self.dbmodel.addFile(filehash=md5hash, filepath=filepath_rel, title=title)
+            self.dbmodel.addFile(filehash=filehash, filepath=filepath_rel, title=title)
             return True
         
     def getFileByHash(self, filehash):
@@ -120,6 +121,48 @@ class GalleryManager():
         info = self.dbmodel.getFilesByHash(filehash)
         return info
     
+    def getFileList(self, path=None, excludeDotfiles=True):
+        """
+        Returns list of lists:
+            [str filepath, str hash, bool inDatabase]
+        """
+        if path is None:
+            path = self.gallerypath
+        
+        logger.debug('Getting list of files in database...')
+        filepathlist = []
+        for root, dirs, files in os.walk(path):
+            if not os.path.basename(root).startswith('.') and excludeDotfiles:
+                paths = [os.path.join(root,f) for f in files]
+                filepathlist+=paths
+        
+        logger.debug('Found '+str(len(filepathlist))+' files. Getting hash + database state...')
+        filelist = []
+        for filepath in filepathlist:
+            filehash = self.getHash(filepath)
+            indb = len(self.getFileByHash(filehash))>0
+            
+            filelist.append([filepath, filehash, indb])
+                
+        return filelist
+        
+    def addNewFiles(self):
+        """
+        Adds new files in gallery to database
+        returns number of newfiles added
+        """
+        filelist = self.getFileList()
+        
+        logger.debug('Adding new files to database...')
+        newfiles = 0
+        for f in filelist:
+            if f[2] is False:
+                self.addFile(filepath = f[0], filehash = f[1])
+                newfiles+=1
+        
+        logger.debug('Added '+str(newfiles)+' new files to database.')
+        return newfiles
+            
     # TODO - finish this (- * % _) http://ehwiki.org/wiki/search
     def search(self, searchstring):
         """
