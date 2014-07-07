@@ -40,7 +40,7 @@ class Settings():
         if self.settings is None:
             logger.error('No settings to write')
         else:
-            logger.error('Saving settings to file')
+            logger.debug('Saving settings to file')
             f = open(self.settingspath, 'wb')
             yaml.dump(self.settings, f)
             f.close

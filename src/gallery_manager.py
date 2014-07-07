@@ -87,8 +87,9 @@ class GalleryManager():
     def getSettings(self):
         return self.settings.getSettings()
         
-    def setSettings(self, newSettings):
+    def saveSettings(self, newSettings):
         self.settings.setSettings(newSettings)
+        self.settings.saveSettings()
     
     def getHash(self, filepath):
         """

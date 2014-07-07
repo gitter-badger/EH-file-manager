@@ -70,6 +70,11 @@ class GalleryWindow(QMainWindow):
         findNewFilesAction.setStatusTip('Automatically find new files in gallery and add them to database')
         findNewFilesAction.triggered.connect(self.findNewFiles)
         
+        # @TODO - edit icon
+        editSettingsAction = QtGui.QAction('Edit settings', self)
+        editSettingsAction.setStatusTip('Edit application settings')
+        editSettingsAction.triggered.connect(self.editSettings)
+        
         fileMenu = menubar.addMenu('&File')
         fileMenu.addAction(addFileAction)
         fileMenu.addAction(findNewFilesAction)
@@ -77,6 +82,7 @@ class GalleryWindow(QMainWindow):
         fileMenu.addAction(updateFileAction_API)
         fileMenu.addAction(updateFileAction_HTML)
         fileMenu.addAction(removeFileAction)
+        fileMenu.addAction(editSettingsAction)
         fileMenu.addAction(exitAction)
         
         helpMenu = menubar.addMenu('&Help')
@@ -235,6 +241,11 @@ class GalleryWindow(QMainWindow):
         QMessageBox.information(self, 'Find new files', 'Manager found '+str(newfiles)+' new files.')
         
         self.search()
+        
+    def editSettings(self):
+        # @TODO - block main window when editing
+        app = EditSettings(self.manager)
+        app.exec_()
             
     def search(self):
         """
@@ -398,7 +409,7 @@ class EditDetails(QDialog):
         hr3 = QFrame()
         hr3.setFrameShape(QFrame.HLine)
         
-        btn_close = QPushButton('Cencel')
+        btn_close = QPushButton('Cancel')
         btn_close.pressed.connect(self.close)
         btn_edit = QPushButton('Edit')
         btn_edit.pressed.connect(self.edit)
@@ -431,6 +442,71 @@ class EditDetails(QDialog):
                 self.new_fileinfo['tags'][tc] = t_list
         
         self.manager.updateFileInfo(self.filehash, self.new_fileinfo)
+        self.close()
+        
+class EditSettings(QDialog):
+    def __init__(self, manager):
+        self.manager = manager
+        self.old_settings = self.manager.getSettings()
+        self.new_settings = {}
+        
+        QDialog.__init__(self)
+        self.initUI()
+        
+        self.resize(700, 50)
+        
+    def initUI(self):
+        self.setWindowTitle('Edit settings')
+        
+        layout_main = QGridLayout()
+        layout_main.setSpacing(5)
+        rstart = 0
+        
+        ## Fileinfo form - basic
+        self.line_reader = QLineEdit(self.old_settings['reader'])
+        self.line_categories = QLineEdit(', '.join(self.old_settings['categories']))
+        self.line_namespaces = QLineEdit(', '.join(self.old_settings['namespaces']))
+        
+        layout_main.addWidget(QLabel('<b>Reader:</b> '), rstart + 0, 0)
+        layout_main.addWidget(self.line_reader, rstart + 0, 1)
+        layout_main.addWidget(QLabel('<b>Categories:</b> '), rstart + 1, 0)
+        layout_main.addWidget(self.line_categories, rstart + 1, 1)
+        layout_main.addWidget(QLabel('<b>Namespaces:</b> '), rstart + 2, 0)
+        layout_main.addWidget(self.line_namespaces, rstart + 2, 1)
+        rstart+=3
+        
+        ## Buttons
+        hr = QFrame()
+        hr.setFrameShape(QFrame.HLine)
+        
+        btn_close = QPushButton('Cancel')
+        btn_close.pressed.connect(self.close)
+        btn_edit = QPushButton('Edit')
+        btn_edit.pressed.connect(self.edit)
+        
+        layout_main.addWidget(hr, rstart + 0, 0, 1, 2)
+        layout_main.addWidget(btn_close, rstart + 1, 0)
+        layout_main.addWidget(btn_edit, rstart + 1, 1)
+        rstart+=2
+        
+        ## Stretcher
+        layout_main.addItem(QSpacerItem(0,0), rstart + 0, 0)
+        layout_main.setRowStretch(rstart + 0, 1)
+        rstart+=1
+        
+        ## Setup layout
+        self.setLayout(layout_main)
+        self.show()
+        
+    def edit(self):
+        self.new_settings = dict(self.old_settings)
+        
+        self.new_settings['reader'] = str(self.line_reader.text())
+        
+        self.new_settings['categories'] = [x.strip() for x in str(self.line_categories.text()).lower().split(',')]
+        self.new_settings['namespaces'] = [x.strip() for x in str(self.line_namespaces.text()).lower().split(',')]
+        
+        self.manager.saveSettings(self.new_settings)
         self.close()
         
         
