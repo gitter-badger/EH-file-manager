@@ -38,54 +38,59 @@ class GalleryWindow(QMainWindow):
         # menubar
         menubar = self.menuBar()
         
-        exitAction = QtGui.QAction(QIcon.fromTheme("application-exit"), '&Exit', self)        
-        exitAction.setShortcut('Ctrl+Q')
-        exitAction.setStatusTip('Exit application')
-        exitAction.triggered.connect(self.closeEvent)
         
-        addFileAction = QtGui.QAction(QIcon.fromTheme("document-new"), '&Add file', self)
+        
+        addFileAction = QtGui.QAction(QIcon.fromTheme("document-new"), 'Add file', self)
         addFileAction.setShortcut('Ctrl+A')
         addFileAction.setStatusTip('Add new file information to database')
         addFileAction.triggered.connect(self.addFile)
         
-        # @TODO - edit icon
-        editFileAction = QtGui.QAction(QIcon.fromTheme("document-save"), '&Edit file', self)
+        editFileAction = QtGui.QAction('Edit file', self)
         editFileAction.setShortcut('Ctrl+E')
         editFileAction.setStatusTip('Edit file information')
         editFileAction.triggered.connect(self.editFile)
         
-        updateFileAction_API = QtGui.QAction(QIcon.fromTheme("network-wireless"), '&Info from URL (API)', self) 
-        updateFileAction_API.setStatusTip('Updates files info with information from URL link (API)')
-        updateFileAction_API.triggered.connect(self.updateInfoFromLink_API)
-        
-        updateFileAction_HTML = QtGui.QAction(QIcon.fromTheme("network-wireless"), '&Info from URL (HTML)', self) 
-        updateFileAction_HTML.setStatusTip('Updates files info with information from URL link (HTML parser)')
-        updateFileAction_HTML.triggered.connect(self.updateInfoFromLink_HTML)
-        
-        removeFileAction = QtGui.QAction(QIcon.fromTheme("edit-delete"), '&Remove file', self)
+        removeFileAction = QtGui.QAction(QIcon.fromTheme("edit-delete"), 'Remove file', self)
+        removeFileAction.setShortcut('Ctrl+R')
         removeFileAction.setStatusTip('Remove file from info database')
         removeFileAction.triggered.connect(self.removeFile)
         
-        findNewFilesAction = QtGui.QAction('Find new files', self)
+        updateFileAction_API = QtGui.QAction('Info from URL (API)', self) 
+        updateFileAction_API.setShortcut('Alt+A')
+        updateFileAction_API.setStatusTip('Updates files info with information from URL link (API)')
+        updateFileAction_API.triggered.connect(self.updateInfoFromLink_API)
+        
+        updateFileAction_HTML = QtGui.QAction('Info from URL (HTML)', self) 
+        updateFileAction_HTML.setShortcut('Alt+H')
+        updateFileAction_HTML.setStatusTip('Updates files info with information from URL link (HTML parser)')
+        updateFileAction_HTML.triggered.connect(self.updateInfoFromLink_HTML)
+
+        findNewFilesAction = QtGui.QAction(QIcon.fromTheme("find"), 'Find new files', self)
+        findNewFilesAction.setShortcut('Ctrl+F')
         findNewFilesAction.setStatusTip('Automatically find new files in gallery and add them to database')
         findNewFilesAction.triggered.connect(self.findNewFiles)
         
-        # @TODO - edit icon
-        editSettingsAction = QtGui.QAction('Edit settings', self)
-        editSettingsAction.setStatusTip('Edit application settings')
-        editSettingsAction.triggered.connect(self.editSettings)
+        settingsAction = QtGui.QAction(QIcon.fromTheme("document-properties"), 'Settings', self)
+        settingsAction.setShortcut('Ctrl+S')
+        settingsAction.setStatusTip('Edit application settings')
+        settingsAction.triggered.connect(self.editSettings)
         
-        fileMenu = menubar.addMenu('&File')
+        exitAction = QtGui.QAction(QIcon.fromTheme("application-exit"), 'Exit', self)        
+        exitAction.setShortcut('Ctrl+Q')
+        exitAction.setStatusTip('Exit application')
+        exitAction.triggered.connect(self.closeEvent)
+        
+        fileMenu = menubar.addMenu('File')
         fileMenu.addAction(addFileAction)
-        fileMenu.addAction(findNewFilesAction)
         fileMenu.addAction(editFileAction)
+        fileMenu.addAction(removeFileAction)
         fileMenu.addAction(updateFileAction_API)
         fileMenu.addAction(updateFileAction_HTML)
-        fileMenu.addAction(removeFileAction)
-        fileMenu.addAction(editSettingsAction)
+        fileMenu.addAction(findNewFilesAction)
+        fileMenu.addAction(settingsAction)
         fileMenu.addAction(exitAction)
         
-        helpMenu = menubar.addMenu('&Help')
+        helpMenu = menubar.addMenu('Help')
         
         # Search bar
         self.layout_search = QHBoxLayout()
