@@ -20,10 +20,10 @@ class GalleryManager():
     """
     Main class of application
     """
+    CONFIGDIR = '.config'
     
     def __init__(self, gallerypath=''):
         self.gallerypath = str(gallerypath)
-        self.configdir = '.config'
         
         self.dbmodel = None
         self.settings = None
@@ -47,7 +47,7 @@ class GalleryManager():
             self.initGallery(self.gallerypath)
         
         
-        configpath = os.path.join(self.gallerypath, self.configdir)
+        configpath = os.path.join(self.gallerypath, self.CONFIGDIR)
         # load settings
         self.settings = Settings(configpath)
         self.settings.loadSettings()
@@ -56,18 +56,22 @@ class GalleryManager():
         self.dbmodel = DatabaseModel(configpath)
         self.dbmodel.openDatabase()   
     
-    # TODO - propper check
     def isGallery(self, path):
         """
         Checks if path leads to existing gallery.
         """
-        path = str(path)
-        if os.path.isdir(os.path.join(path, self.configdir)) is True:
-            logger.debug('isGallery: given path is existing gallery.')
-            return True
-        else:
-            logger.debug('isGallery: given path is not gallery.')
-            return False
+        configpath = os.path.join(str(path), self.CONFIGDIR)
+        
+        if os.path.isdir(configpath):
+            settings_path = os.path.join(configpath, Settings.FILENAME)
+            database_path = os.path.join(configpath, DatabaseModel.FILENAME)
+            
+            if os.path.isfile(settings_path) and os.path.isfile(database_path):
+                logger.debug('isGallery: given path is existing gallery.')
+                return True
+            
+        logger.debug('isGallery: given path is not gallery.')
+        return False
         
     def initGallery(self, path):
         """
@@ -75,7 +79,7 @@ class GalleryManager():
         """
         logger.debug('Creating new gallery structure...')
         
-        configpath = os.path.join(path, self.configdir)
+        configpath = os.path.join(path, self.CONFIGDIR)
         
         # create config folder and files
         os.mkdir(configpath)

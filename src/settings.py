@@ -10,9 +10,10 @@ import sys
 import yaml
 
 class Settings():
+    FILENAME = 'settings.yaml'
+    
     def __init__(self, configpath):
-        self.settingsfile='settings.yaml'
-        self.settingspath = os.path.join(configpath, self.settingsfile)
+        self.settingspath = os.path.join(configpath, self.FILENAME)
         
         self.settings = None
         
