@@ -16,7 +16,7 @@ from gallery_manager import GalleryManager
 class GalleryWindow(QMainWindow):
     def __init__(self, gallerypath):
         super(GalleryWindow, self).__init__()
-        self.gallerypath = gallerypath
+        self.gallerypath = str(gallerypath)
         self.manager = GalleryManager(self.gallerypath)
         self.selectedFile = None
         
@@ -204,14 +204,16 @@ class GalleryWindow(QMainWindow):
         """
         logger.debug('Opening file in external reader.')
         filehash = str(treeItem.text(0))
-        filepath_rel = str(self.manager.getFileByHash(filehash)[0]['filepath'])
+        filepath_rel = self.manager.getFileByHash(filehash)[0]['filepath']
         filepath = os.path.join(self.gallerypath, filepath_rel)
         
         # get path to executable of external archive reader
         reader = self.manager.getSettings()['reader']
         
         # @TODO - open in separate thread (dont wait for it to finish)
-        os.system(reader+' "'+str(filepath)+'"')
+        systemCommand = reader+' "'+filepath.encode('utf-8')+'"'
+        logger.debug('Running: '+systemCommand)
+        os.system(systemCommand)
         
     def addFile(self):
         """

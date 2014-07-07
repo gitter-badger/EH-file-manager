@@ -56,7 +56,10 @@ class DatabaseModel():
         tagstr = ''
         for tc in tags:
             tagstr+=' '+' '.join([str(tc).lower()+':'+t.replace(' ','_').lower() for t in tags[tc]])
-            
+        
+        # remove forbidden chars in string
+        tagstr = tagstr.replace("'",'').replace('"','')
+        
         return tagstr.strip()
         
     def stringToTags(self, tagstr):
@@ -84,11 +87,11 @@ class DatabaseModel():
         
     def addFile(self, filehash, filepath, title, title_jpn='', category='manga', tags=[]):
         fileinfo = {
-                    'hash': str(filehash),
-                    'filepath': str(filepath),
-                    'title': str(title),
-                    'title_jpn': str(title_jpn),
-                    'category': str(category),
+                    'hash': filehash,
+                    'filepath': filepath,
+                    'title': title,
+                    'title_jpn': title_jpn,
+                    'category': category,
                     'tags': {},
                     'new': 1
                     } 
@@ -108,8 +111,14 @@ class DatabaseModel():
         """ 
         # convert tags to string
         fileinfo['tags'] = self.tagsToString(fileinfo['tags'])
+        
+        # remove forbidden chars in string
+        fileinfo['filepath'] = fileinfo['filepath'].replace("'",'').replace('"','')
+        fileinfo['title'] = fileinfo['title'].replace("'",'').replace('"','')
+        fileinfo['title_jpn'] = fileinfo['title_jpn'].replace("'",'').replace('"','')
+        fileinfo['category'] = fileinfo['category'].replace("'",'').replace('"','')
                 
-        query = unicode("INSERT INTO Files VALUES ('"+fileinfo['hash']+"', '"+fileinfo['filepath']+"', '"+fileinfo['title']+"', '"+fileinfo['title_jpn']+"', '"+fileinfo['category']+"', '"+fileinfo['tags']+"', "+str(int(fileinfo['new']))+")").encode("utf8")
+        query = "INSERT INTO Files VALUES ('"+fileinfo['hash']+"', '"+fileinfo['filepath']+"', '"+fileinfo['title']+"', '"+fileinfo['title_jpn']+"', '"+fileinfo['category']+"', '"+fileinfo['tags']+"', "+str(int(fileinfo['new']))+")"
         logger.debug('SQLite newfile query: '+query)
         
         self.litecursor.execute(query)
@@ -149,6 +158,12 @@ class DatabaseModel():
     def updateFile(self, filehash, newinfo):
         # convert tags to string
         newinfo['tags'] = self.tagsToString(newinfo['tags'])
+        
+        # remove forbidden chars in string
+        newinfo['filepath'] = newinfo['filepath'].replace("'",'').replace('"','')
+        newinfo['title'] = newinfo['title'].replace("'",'').replace('"','')
+        newinfo['title_jpn'] = newinfo['title_jpn'].replace("'",'').replace('"','')
+        newinfo['category'] = newinfo['category'].replace("'",'').replace('"','')
         
         query = unicode("UPDATE Files SET filepath='"+newinfo['filepath']+"', title='"+newinfo['title']+"', title_jpn='"+newinfo['title_jpn']+"', category='"+newinfo['category']+"', tags='"+newinfo['tags']+"', new='"+str(int(newinfo['new']))+"' WHERE hash = '"+filehash+"' ").encode("utf8")
         logger.debug('SQLite updatefile query: '+query)
