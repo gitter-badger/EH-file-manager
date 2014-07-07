@@ -6,6 +6,7 @@ logger = logging.getLogger(__name__)
 
 import os
 import sys
+import thread
 
 from PyQt4 import QtCore, QtGui
 from PyQt4.QtCore import *
@@ -210,10 +211,9 @@ class GalleryWindow(QMainWindow):
         # get path to executable of external archive reader
         reader = self.manager.getSettings()['reader']
         
-        # @TODO - open in separate thread (dont wait for it to finish)
         systemCommand = reader+' "'+filepath.encode('utf-8')+'"'
         logger.debug('Running: '+systemCommand)
-        os.system(systemCommand)
+        thread.start_new_thread(os.system, (systemCommand,))
         
     def addFile(self):
         """
