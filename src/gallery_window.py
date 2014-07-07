@@ -180,10 +180,14 @@ class GalleryWindow(QMainWindow):
         """
         logger.debug('Opening file in external reader.')
         filehash = str(treeItem.text(0))
-        filepath_rel = self.manager.getFileByHash(filehash)[0]['filepath']
+        filepath_rel = str(self.manager.getFileByHash(filehash)[0]['filepath'])
         filepath = os.path.join(self.gallerypath, filepath_rel)
         
-        os.system('mcomix "'+str(filepath)+'"')
+        # get path to executable of external archive reader
+        reader = self.manager.getSettings()['reader']
+        
+        # @TODO - open in separate thread (dont wait for it to finish)
+        os.system(reader+' "'+str(filepath)+'"')
         
     def addFile(self):
         """
@@ -297,10 +301,11 @@ class ShowDetails(QDialog):
         hr.setFrameShape(QFrame.HLine)
         layout_main.addWidget(hr)
         
-        main_namespaces = ['language', 'parody', 'character', 'group', 'artist', 'male', 'female', 'misc']
+        # get list of main namespaces from config
+        namespaces = self.manager.getSettings()['namespaces']
         
         # standard tag namespaces
-        for tc in main_namespaces:
+        for tc in namespaces:
             if tc in self.fileinfo['tags']:
                 tags = QLabel('<b>'+tc+':</b> '+', '.join(self.fileinfo['tags'][tc]))
                 tags.setWordWrap(True)
@@ -308,7 +313,7 @@ class ShowDetails(QDialog):
         
         # other non-standard tag namespaces
         for tc in self.fileinfo['tags']:
-            if not (tc in main_namespaces):
+            if not (tc in namespaces):
                 tags = QLabel('<b>'+tc+':</b> '+', '.join(self.fileinfo['tags'][tc]))
                 tags.setWordWrap(True)
                 layout_main.addWidget(tags)
@@ -363,11 +368,12 @@ class EditDetails(QDialog):
         layout_main.addWidget(hr, rstart + 0, 0, 1, 2)
         rstart+=1
         
-        main_namespaces = ['language', 'parody', 'character', 'group', 'artist', 'male', 'female', 'misc']
-        self.line_tags = {}
+        # get list of main namespaces from config
+        namespaces = self.manager.getSettings()['namespaces']
         
+        self.line_tags = {}
         # standard tag namespaces
-        for tc in main_namespaces:
+        for tc in namespaces:
             if tc in self.old_fileinfo['tags']:
                 self.line_tags[tc] = QLineEdit(', '.join(self.old_fileinfo['tags'][tc]))
             else:
@@ -379,7 +385,7 @@ class EditDetails(QDialog):
         
         # other non-standard tag namespaces
         for tc in self.old_fileinfo['tags']:
-            if not (tc in main_namespaces):
+            if not (tc in namespaces):
                 self.line_tags[tc] = QLineEdit(', '.join(self.old_fileinfo['tags'][tc]))
                 
                 layout_main.addWidget(QLabel('<b>'+str(tc)+':</b> '), rstart + 0, 0)

@@ -8,19 +8,19 @@ import os
 import sqlite3
 
 class DatabaseModel():
-    def __init__(self, gallerypath, configdir='.config'):
-        # path to database file
-        self.gallerypath = gallerypath
-        self.configdir = configdir
+    def __init__(self, configpath):
+        self.configpath = configpath
+        self.dbfilename='database.db'
+        
         self.dbpath = None
         self.liteconnection = None
         self.litecursor = None
         
-    def openDatabase(self, dbfilename='database.db'):
+    def openDatabase(self):
         """
         Creates connection with database. if database doesnt exists creates new one.
         """
-        self.dbpath = os.path.join(os.path.join(self.gallerypath, self.configdir), dbfilename)
+        self.dbpath = os.path.join(self.configpath, self.dbfilename)
         
         # if database doesnt exist create it
         if os.path.isfile(self.dbpath) is False:

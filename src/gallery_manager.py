@@ -14,16 +14,19 @@ import json
 from bs4 import BeautifulSoup
 
 from database_model import DatabaseModel
+from settings import Settings
 
 class GalleryManager():
     """
     Main class of application
     """
     
-    def __init__(self, gallerypath='', configdir='.config'):
+    def __init__(self, gallerypath=''):
         self.gallerypath = str(gallerypath)
-        self.configdir = str(configdir)
+        self.configdir = '.config'
+        
         self.dbmodel = None
+        self.settings = None
         
         if self.gallerypath is not '':
             self.openPath(self.gallerypath)
@@ -42,9 +45,15 @@ class GalleryManager():
         # checks if path is existing gallery. if not creates one.
         if self.isGallery(self.gallerypath) is False:
             self.initGallery(self.gallerypath)
+        
+        
+        configpath = os.path.join(self.gallerypath, self.configdir)
+        # load settings
+        self.settings = Settings(configpath)
+        self.settings.loadSettings()
             
         # open connection to database
-        self.dbmodel = DatabaseModel(self.gallerypath, configdir=self.configdir)
+        self.dbmodel = DatabaseModel(configpath)
         self.dbmodel.openDatabase()   
     
     # TODO - propper check
@@ -60,14 +69,26 @@ class GalleryManager():
             logger.debug('isGallery: given path is not gallery.')
             return False
         
-    def initGallery(self, path, destructive=False):
+    def initGallery(self, path):
         """
         Creates new gallery basic structure.
         """
         logger.debug('Creating new gallery structure...')
         
-        # create folder structure
-        os.mkdir(os.path.join(path, self.configdir))
+        configpath = os.path.join(path, self.configdir)
+        
+        # create config folder and files
+        os.mkdir(configpath)
+        DatabaseModel(configpath)
+        setmod = Settings(configpath)
+        setmod.loadSettings()
+        setmod.saveSettings()
+        
+    def getSettings(self):
+        return self.settings.getSettings()
+        
+    def setSettings(self, newSettings):
+        self.settings.setSettings(newSettings)
     
     def getHash(self, filepath):
         """
