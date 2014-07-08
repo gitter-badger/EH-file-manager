@@ -398,20 +398,32 @@ class EditDetails(QDialog):
         layout_main.setSpacing(5)
         rstart = 0
         
-        ## Fileinfo form - basic
+        # Fileinfo form - titles
         self.line_title = QLineEdit(self.old_fileinfo['title'])
         self.line_title_jpn = QLineEdit(self.old_fileinfo['title_jpn'])
-        self.line_category = QLineEdit(self.old_fileinfo['category'])
         
         layout_main.addWidget(QLabel('<b>Title:</b> '), rstart + 0, 0)
         layout_main.addWidget(self.line_title, rstart + 0, 1)
         layout_main.addWidget(QLabel('<b>Title [Jpn]:</b> '), rstart + 1, 0)
         layout_main.addWidget(self.line_title_jpn, rstart + 1, 1)
-        layout_main.addWidget(QLabel('<b>Category:</b> '), rstart + 2, 0)
-        layout_main.addWidget(self.line_category, rstart + 2, 1)
-        rstart+=3
+        rstart+=2
         
-        # newfile
+        # Fileinfo form - category
+        categories = self.manager.getSettings()['categories']
+        
+        self.combobox_category = QComboBox()
+        self.combobox_category.addItems(categories)
+        if not self.old_fileinfo['category'] in categories:
+            self.combobox_category.addItem(self.old_fileinfo['category'])
+            
+        selectedIndex = self.combobox_category.findText(self.old_fileinfo['category'])
+        self.combobox_category.setCurrentIndex(selectedIndex)
+        
+        layout_main.addWidget(QLabel('<b>Category:</b> '), rstart + 0, 0)
+        layout_main.addWidget(self.combobox_category, rstart + 0, 1)
+        rstart+=1
+        
+        # Fileinfo form - newfile
         self.new_box = QCheckBox('New file', self)
         self.new_box.stateChanged.connect(self.new_box_changed)
         
@@ -419,7 +431,6 @@ class EditDetails(QDialog):
         rstart+=1
         
         ## Fileinfo form - tags
-        # @TODO - new namespace
         hr = QFrame()
         hr.setFrameShape(QFrame.HLine)
         
@@ -484,7 +495,7 @@ class EditDetails(QDialog):
         
         self.new_fileinfo['title'] = self.line_title.text()
         self.new_fileinfo['title_jpn'] = self.line_title_jpn.text()
-        self.new_fileinfo['category'] = str(self.line_category.text()).lower()
+        self.new_fileinfo['category'] = str(self.combobox_category.itemText(self.combobox_category.currentIndex()))
         self.new_fileinfo['new'] = self.new_bool
         
         self.new_fileinfo['tags'] = {}
