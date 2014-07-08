@@ -21,10 +21,6 @@ class GalleryWindow(QMainWindow):
         self.manager = GalleryManager(self.gallerypath)
         self.selectedFile = None
         
-        self.search_cfg = {
-                            'new':False
-                            }
-        
         QMainWindow.__init__(self)   
         self.resize(800, 500)
         self.initUI()        
@@ -117,9 +113,10 @@ class GalleryWindow(QMainWindow):
         self.layout_ad_search.setSpacing(5)
         
         self.ui_box_new = QCheckBox('Only new files', self)
-        self.ui_box_new.stateChanged.connect(self.box_new_changed)
+        self.ui_box_del = QCheckBox('Only deleted files', self)
         
         self.layout_ad_search.addWidget(self.ui_box_new)
+        self.layout_ad_search.addWidget(self.ui_box_del)
         
         self.ui_layout.addLayout(self.layout_ad_search)
         
@@ -129,10 +126,13 @@ class GalleryWindow(QMainWindow):
         colNames = QStringList()
         colNames.append("MD5 Hash")
         colNames.append("Category")
+        colNames.append("S")
         colNames.append("Title")
         self.ui_filelist.setHeaderLabels(colNames)
         self.ui_filelist.hideColumn(0) # hide column with hashes
-        self.ui_filelist.resizeColumnToContents(1) # set category to min width
+        # set column to min width
+        self.ui_filelist.resizeColumnToContents(1)
+        self.ui_filelist.resizeColumnToContents(2) 
         
         self.ui_filelist.itemPressed.connect(self.selectFile)
         self.ui_filelist.itemDoubleClicked.connect(self.openFileInReader)
@@ -266,12 +266,6 @@ class GalleryWindow(QMainWindow):
         # @TODO - block main window when editing
         app = EditSettings(self.manager)
         app.exec_()
-        
-    def box_new_changed(self, state):    
-        if state == QtCore.Qt.Checked:
-            self.search_cfg['new'] = True
-        else:
-            self.search_cfg['new'] = False
             
     def search(self):
         """
@@ -280,6 +274,11 @@ class GalleryWindow(QMainWindow):
         searchstring = str(self.ui_searchbar.text())
         logger.debug('Searching -> '+str(searchstring))
         
+        self.search_cfg = {
+            'new': (self.ui_box_new.checkState()==QtCore.Qt.Checked),
+            'del': (self.ui_box_del.checkState()==QtCore.Qt.Checked)
+            }
+        
         filteredlist = self.manager.search(searchstring, self.search_cfg)
         
         self.ui_filelist.clear()
@@ -287,7 +286,19 @@ class GalleryWindow(QMainWindow):
             treeItem = QTreeWidgetItem(self.ui_filelist)
             treeItem.setText(0, f['hash'])
             treeItem.setText(1, f['category'])
-            treeItem.setText(2, f['title'])
+            
+            status = ''
+            if f['new']:
+                status += 'N'
+            if not os.path.isfile(os.path.join(self.gallerypath, f['filepath'])):
+                status += 'D'
+            treeItem.setText(2, str(status))
+            
+            if f['title']!='':
+                title = f['title']
+            else:
+                title = f['title_jpn']
+            treeItem.setText(3, title)
         
         self.selectedFile = None
         self.showFileDetails()
@@ -383,10 +394,8 @@ class EditDetails(QDialog):
         self.initUI()
         
         if self.old_fileinfo['new']:
-            self.new_bool = True
             self.new_box.setCheckState(Qt.Checked)
         else:
-            self.new_bool = False
             self.new_box.setCheckState(Qt.Unchecked)
         
         self.resize(700, 50)
@@ -425,7 +434,6 @@ class EditDetails(QDialog):
         
         # Fileinfo form - newfile
         self.new_box = QCheckBox('New file', self)
-        self.new_box.stateChanged.connect(self.new_box_changed)
         
         layout_main.addWidget(self.new_box, rstart + 0, 0, 1, 2)
         rstart+=1
@@ -483,12 +491,6 @@ class EditDetails(QDialog):
         ## Setup layout
         self.setLayout(layout_main)
         self.show()
-        
-    def new_box_changed(self, state):    
-        if state == QtCore.Qt.Checked:
-            self.new_bool = True
-        else:
-            self.new_bool = False
     
     def edit(self):
         self.new_fileinfo = dict(self.old_fileinfo)
@@ -496,7 +498,7 @@ class EditDetails(QDialog):
         self.new_fileinfo['title'] = self.line_title.text()
         self.new_fileinfo['title_jpn'] = self.line_title_jpn.text()
         self.new_fileinfo['category'] = str(self.combobox_category.itemText(self.combobox_category.currentIndex()))
-        self.new_fileinfo['new'] = self.new_bool
+        self.new_fileinfo['new'] = (self.new_box.checkState()==QtCore.Qt.Checked)
         
         self.new_fileinfo['tags'] = {}
         for tc in self.line_tags:

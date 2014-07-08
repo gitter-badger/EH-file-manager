@@ -253,7 +253,14 @@ class GalleryManager():
             for f in filtered:
                 if f['new']:
                     filtered_new.append(f)
-            filtered = filtered_new           
+            filtered = filtered_new
+        
+        if search_cfg['del']:
+            filtered_new = []
+            for f in filtered:
+                if not os.path.isfile(os.path.join(self.gallerypath, f['filepath'])):
+                    filtered_new.append(f)
+            filtered = filtered_new 
              
         return filtered
         
