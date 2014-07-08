@@ -32,10 +32,10 @@ Changelog
 - Mark new files in database
 - Settings file (reader, categories, namespaces)
 - GUI for editing settings 
-- Better japanese support 
+- Better Japanese support 
 - Searching by filehash, new files, deleted files
-- File status (new/deleted) in fileinfo
+- File status (new/deleted) in filelist
 
 0.1
 
-- first release
+- First release
