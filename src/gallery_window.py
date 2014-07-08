@@ -17,7 +17,7 @@ from gallery_manager import GalleryManager
 class GalleryWindow(QMainWindow):
     def __init__(self, gallerypath):
         super(GalleryWindow, self).__init__()
-        self.gallerypath = str(gallerypath)
+        self.gallerypath = unicode(gallerypath)
         self.manager = GalleryManager(self.gallerypath)
         self.selectedFile = None
         
@@ -292,7 +292,7 @@ class GalleryWindow(QMainWindow):
                 status += 'N'
             if not os.path.isfile(os.path.join(self.gallerypath, f['filepath'])):
                 status += 'D'
-            treeItem.setText(2, str(status))
+            treeItem.setText(2, status)
             
             if f['title']!='':
                 title = f['title']
@@ -495,15 +495,15 @@ class EditDetails(QDialog):
     def edit(self):
         self.new_fileinfo = dict(self.old_fileinfo)
         
-        self.new_fileinfo['title'] = self.line_title.text()
-        self.new_fileinfo['title_jpn'] = self.line_title_jpn.text()
-        self.new_fileinfo['category'] = str(self.combobox_category.itemText(self.combobox_category.currentIndex()))
+        self.new_fileinfo['title'] = unicode(self.line_title.text()).encode('utf-8')
+        self.new_fileinfo['title_jpn'] = unicode(self.line_title_jpn.text()).encode('utf-8')
+        self.new_fileinfo['category'] = unicode(self.combobox_category.itemText(self.combobox_category.currentIndex())).encode('utf-8')
         self.new_fileinfo['new'] = (self.new_box.checkState()==QtCore.Qt.Checked)
         
         self.new_fileinfo['tags'] = {}
         for tc in self.line_tags:
             if str(self.line_tags[tc].text()).strip() != '':
-                t_list = [t.strip() for t in str(self.line_tags[tc].text()).lower().split(',')]
+                t_list = [t.strip() for t in unicode(self.line_tags[tc].text()).encode('utf-8').lower().split(',')]
                 self.new_fileinfo['tags'][tc] = t_list
         
         self.manager.updateFileInfo(self.filehash, self.new_fileinfo)
@@ -566,10 +566,10 @@ class EditSettings(QDialog):
     def edit(self):
         self.new_settings = dict(self.old_settings)
         
-        self.new_settings['reader'] = str(self.line_reader.text())
+        self.new_settings['reader'] = unicode(self.line_reader.text()).encode('utf-8')
         
-        self.new_settings['categories'] = [x.strip() for x in str(self.line_categories.text()).lower().split(',')]
-        self.new_settings['namespaces'] = [x.strip() for x in str(self.line_namespaces.text()).lower().split(',')]
+        self.new_settings['categories'] = [x.strip() for x in unicode(self.line_categories.text()).encode('utf-8').lower().split(',')]
+        self.new_settings['namespaces'] = [x.strip() for x in unicode(self.line_namespaces.text()).encode('utf-8').lower().split(',')]
         
         self.manager.saveSettings(self.new_settings)
         self.close()

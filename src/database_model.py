@@ -112,16 +112,20 @@ class DatabaseModel():
         # convert tags to string
         fileinfo['tags'] = self.tagsToString(fileinfo['tags'])
         
-        # remove forbidden chars in string
-        fileinfo['filepath'] = fileinfo['filepath'].replace("'",'').replace('"','')
-        fileinfo['title'] = fileinfo['title'].replace("'",'').replace('"','')
-        fileinfo['title_jpn'] = fileinfo['title_jpn'].replace("'",'').replace('"','')
-        fileinfo['category'] = fileinfo['category'].replace("'",'').replace('"','')
-                
-        query = "INSERT INTO Files VALUES ('"+fileinfo['hash']+"', '"+fileinfo['filepath']+"', '"+fileinfo['title']+"', '"+fileinfo['title_jpn']+"', '"+fileinfo['category']+"', '"+fileinfo['tags']+"', "+str(int(fileinfo['new']))+")"
-        logger.debug('SQLite newfile query: '+query)
+        # convert new to string
+        fileinfo['new'] = str(int(fileinfo['new']))
         
-        self.litecursor.execute(query)
+        # convert utf-8 to unicode
+        for fi in fileinfo:
+            if type(fileinfo[fi]) != type(u' '):
+                fileinfo[fi] = fileinfo[fi].decode('utf-8') 
+                
+        logger.debug('SQLite newfile query: '+str(fileinfo))
+        
+        values = (fileinfo['hash'], fileinfo['filepath'], fileinfo['title'],
+                  fileinfo['title_jpn'], fileinfo['category'], fileinfo['tags'],
+                  fileinfo['new'])
+        self.litecursor.execute(u'INSERT INTO Files VALUES (?, ?, ?, ?, ?, ?, ?)', values)
         self.liteconnection.commit()
     
     def resultToDictionary(self, result):
@@ -159,16 +163,21 @@ class DatabaseModel():
         # convert tags to string
         newinfo['tags'] = self.tagsToString(newinfo['tags'])
         
-        # remove forbidden chars in string
-        newinfo['filepath'] = newinfo['filepath'].replace("'",'').replace('"','')
-        newinfo['title'] = newinfo['title'].replace("'",'').replace('"','')
-        newinfo['title_jpn'] = newinfo['title_jpn'].replace("'",'').replace('"','')
-        newinfo['category'] = newinfo['category'].replace("'",'').replace('"','')
+        # convert new to string
+        newinfo['new'] = str(int(newinfo['new']))
         
-        query = unicode("UPDATE Files SET filepath='"+newinfo['filepath']+"', title='"+newinfo['title']+"', title_jpn='"+newinfo['title_jpn']+"', category='"+newinfo['category']+"', tags='"+newinfo['tags']+"', new='"+str(int(newinfo['new']))+"' WHERE hash = '"+filehash+"' ").encode("utf8")
-        logger.debug('SQLite updatefile query: '+query)
+        # convert utf-8 to unicode
+        for ni in newinfo:
+            if type(newinfo[ni]) != type(u' '):
+                newinfo[ni] = newinfo[ni].decode('utf-8') 
+                
+        logger.debug('SQLite updatefile query: '+str(newinfo))
         
-        self.litecursor.execute(query)
+        values = (newinfo['filepath'], newinfo['title'],
+                  newinfo['title_jpn'], newinfo['category'], newinfo['tags'],
+                  newinfo['new'], filehash)
+
+        self.litecursor.execute(u'UPDATE Files SET filepath=?, title=?, title_jpn=?, category=?, tags=?, new=? WHERE hash =?', values)
         self.liteconnection.commit()
         
     def removeFile(self, filehash):
