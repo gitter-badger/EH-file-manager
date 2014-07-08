@@ -16,7 +16,8 @@ from gallery_manager import GalleryManager
 
 class GalleryWindow(QMainWindow):
     def __init__(self, gallerypath):
-        super(GalleryWindow, self).__init__()
+        QMainWindow.__init__(self)
+        
         self.gallerypath = unicode(gallerypath)
         self.manager = GalleryManager(self.gallerypath)
         self.selectedFile = None
@@ -247,7 +248,7 @@ class GalleryWindow(QMainWindow):
             QMessageBox.information(self, 'Message', 'No file selected, nothing to edit.')
         else:
             # @TODO - block main window when editing
-            app = EditDetails(self.manager, str(self.selectedFile))
+            app = EditDetails(self.manager, str(self.selectedFile), parent=self)
             app.exec_()
             self.search()
             
@@ -264,7 +265,7 @@ class GalleryWindow(QMainWindow):
         
     def editSettings(self):
         # @TODO - block main window when editing
-        app = EditSettings(self.manager)
+        app = EditSettings(self.manager, parent=self)
         app.exec_()
             
     def search(self):
@@ -311,11 +312,11 @@ class GalleryWindow(QMainWindow):
         self.search()
         
 class ShowDetails(QDialog):
-    def __init__(self, manager, filehash=None):
+    def __init__(self, manager, filehash=None, parent=None):
+        QtGui.QDialog.__init__(self, parent)
+        
         self.manager = manager
         self.filehash = filehash
-        
-        QDialog.__init__(self)
         
         if self.filehash is None or str(self.filehash)=='':
             logger.debug('No file selected, nothing to display.')
@@ -384,13 +385,14 @@ class ShowDetails(QDialog):
         self.show()
         
 class EditDetails(QDialog):
-    def __init__(self, manager, filehash):
+    def __init__(self, manager, filehash, parent=None):
+        QtGui.QDialog.__init__(self, parent)
+        
         self.manager = manager
         self.filehash = filehash
         self.old_fileinfo = self.manager.getFileByHash(self.filehash)[0]
         self.new_fileinfo = {}
-        
-        QDialog.__init__(self)
+
         self.initUI()
         
         if self.old_fileinfo['new']:
@@ -510,12 +512,13 @@ class EditDetails(QDialog):
         self.close()
         
 class EditSettings(QDialog):
-    def __init__(self, manager):
+    def __init__(self, manager, parent=None):
+        QtGui.QDialog.__init__(self, parent)
+        
         self.manager = manager
         self.old_settings = self.manager.getSettings()
         self.new_settings = {}
-        
-        QDialog.__init__(self)
+
         self.initUI()
         
         self.resize(700, 50)

@@ -23,6 +23,19 @@ https://www.gnu.org/licenses/gpl-2.0.txt
 
 Changelog
 ---------
+0.2
+
+- Changed name to "EH file manager"
+- GUI for editing file info 
+- Nicer looking file details 
+- Automatically find new files in gallery and add them to database
+- Mark new files in database
+- Settings file (reader, categories, namespaces)
+- GUI for editing settings 
+- Better japanese support 
+- Searching by filehash, new files, deleted files
+- File status (new/deleted) in fileinfo
+
 0.1
 
 - first release

@@ -296,6 +296,7 @@ class GalleryManager():
         gallery_info = r.json()['gmetadata'][0]
         
         gallery_info['tags'] = {'misc':gallery_info['tags']}
+        gallery_info['category'] = gallery_info['category'].lower()
         
         return gallery_info 
         

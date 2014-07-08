@@ -67,10 +67,9 @@ class Settings():
         return True
     
     def getDefaultSettings(self):
-        # @TODO - check if I wrote them right + if is nothing missing 
         default = {
                     'reader': 'mcomix',
-                    'categories': ['manga', 'doujinshi', 'non-h', 'western', 'imageset', 'artistcg', 'misc'],
+                    'categories': ['doujinshi', 'manga', 'artist cg sets', 'game cg sets', 'western', 'non-h', 'image sets', 'cosplay', 'asian porn', 'misc'],
                     'namespaces': ['language', 'parody', 'character', 'group', 'artist', 'male', 'female', 'misc']
                     }
         return default
