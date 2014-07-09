@@ -329,33 +329,48 @@ class ShowDetails(QDialog):
             self.initUI()
     
     def initUI(self):
-        layout_main = QVBoxLayout()
-        layout_main.setSpacing(2)
+        layout_main = QHBoxLayout()
+        layout_main.setSpacing(5)
+        
+        # add thumbnail
+        thumb_path = os.path.join(self.manager.thumbpath, self.fileinfo['hash']+'.png')
+        if not os.path.isfile(thumb_path):
+            thumb_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../res/nothumb.png')
+
+        self.ui_thumb = QLabel()
+        myPixmap = QtGui.QPixmap(thumb_path)
+        #myScaledPixmap = myPixmap.scaled(self.ui_thumb.size(), Qt.KeepAspectRatio)
+        self.ui_thumb.setPixmap(myPixmap)
+        
+        layout_main.addWidget(self.ui_thumb)
         
         ## Basic info
+        layout_info = QVBoxLayout()
+        layout_info.setSpacing(2)
+        
         if self.fileinfo['title']!='':
             self.ui_title = QLabel('<b>Title:</b>  '+self.fileinfo['title'])
             self.ui_title.setWordWrap(True)
-            layout_main.addWidget(self.ui_title)
+            layout_info.addWidget(self.ui_title)
             
         if self.fileinfo['title_jpn']!='':
             self.ui_title_jpn = QLabel('<b>Title [Jpn]:</b>  '+self.fileinfo['title_jpn'])
             self.ui_title_jpn.setWordWrap(True)
-            layout_main.addWidget(self.ui_title_jpn)
+            layout_info.addWidget(self.ui_title_jpn)
             
         self.ui_category = QLabel('<b>Category:</b>  '+self.fileinfo['category'])
         self.ui_category.setWordWrap(True)
-        layout_main.addWidget(self.ui_category)
+        layout_info.addWidget(self.ui_category)
         
         # new file
         self.ui_new = QLabel('<b>Newfile:</b>  '+str(self.fileinfo['new']))
         self.ui_new.setWordWrap(True)
-        layout_main.addWidget(self.ui_new) 
+        layout_info.addWidget(self.ui_new) 
         
         ## Tags
         hr = QFrame()
         hr.setFrameShape(QFrame.HLine)
-        layout_main.addWidget(hr)
+        layout_info.addWidget(hr)
         
         # get list of main namespaces from config
         namespaces = self.manager.getSettings()['namespaces']
@@ -365,17 +380,20 @@ class ShowDetails(QDialog):
             if tc in self.fileinfo['tags']:
                 tags = QLabel('<b>'+tc+':</b> '+', '.join(self.fileinfo['tags'][tc]))
                 tags.setWordWrap(True)
-                layout_main.addWidget(tags)
+                layout_info.addWidget(tags)
         
         # other non-standard tag namespaces
         for tc in self.fileinfo['tags']:
             if not (tc in namespaces):
                 tags = QLabel('<b>'+tc+':</b> '+', '.join(self.fileinfo['tags'][tc]))
                 tags.setWordWrap(True)
-                layout_main.addWidget(tags)
+                layout_info.addWidget(tags)
+        
+        # add stretch
+        layout_info.addStretch()
         
         ## Setup layout
-        layout_main.addStretch()
+        layout_main.addLayout(layout_info, 1)
         self.setLayout(layout_main)
         self.show()
         

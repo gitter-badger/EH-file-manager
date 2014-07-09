@@ -8,6 +8,12 @@ import os
 import sys
 import hashlib
 import re
+import shutil
+
+import py7zlib
+import rarfile
+import zipfile
+import Image
 
 import requests
 import json
@@ -21,9 +27,16 @@ class GalleryManager():
     Main class of application
     """
     CONFIGDIR = '.config'
+    TEMPDIR = '_temp'
+    THUMBDIR = 'thumb'
+    THUMB_MAXSIZE = 200, 300
     
     def __init__(self, gallerypath=''):
         self.gallerypath = str(gallerypath)
+        
+        self.configpath = None
+        self.temppath = None
+        self.thumbpath = None
         
         self.dbmodel = None
         self.settings = None
@@ -46,14 +59,17 @@ class GalleryManager():
         if self.isGallery(self.gallerypath) is False:
             self.initGallery(self.gallerypath)
         
+        # def paths
+        self.configpath = os.path.join(self.gallerypath, self.CONFIGDIR)
+        self.temppath = os.path.join(self.configpath, self.TEMPDIR)
+        self.thumbpath = os.path.join(self.configpath, self.THUMBDIR)
         
-        configpath = os.path.join(self.gallerypath, self.CONFIGDIR)
         # load settings
-        self.settings = Settings(configpath)
+        self.settings = Settings(self.configpath)
         self.settings.loadSettings()
             
         # open connection to database
-        self.dbmodel = DatabaseModel(configpath)
+        self.dbmodel = DatabaseModel(self.configpath)
         self.dbmodel.openDatabase()   
     
     def isGallery(self, path):
@@ -61,12 +77,12 @@ class GalleryManager():
         Checks if path leads to existing gallery.
         """
         configpath = os.path.join(str(path), self.CONFIGDIR)
+        thumbpath = os.path.join(configpath, self.THUMBDIR)
         
         if os.path.isdir(configpath):
-            settings_path = os.path.join(configpath, Settings.FILENAME)
             database_path = os.path.join(configpath, DatabaseModel.FILENAME)
             
-            if os.path.isfile(settings_path) and os.path.isfile(database_path):
+            if os.path.isfile(database_path) and os.path.isdir(thumbpath):
                 logger.debug('isGallery: given path is existing gallery.')
                 return True
             
@@ -80,10 +96,13 @@ class GalleryManager():
         logger.debug('Creating new gallery structure...')
         
         configpath = os.path.join(path, self.CONFIGDIR)
+        thumbpath = os.path.join(configpath, self.THUMBDIR)
         
         # create config folder and files
         if not os.path.isdir(configpath):
             os.mkdir(configpath)
+        if not os.path.isdir(thumbpath):
+            os.mkdir(thumbpath)
         DatabaseModel(configpath)
         setmod = Settings(configpath)
         setmod.loadSettings()
@@ -138,8 +157,20 @@ class GalleryManager():
             filepath_rel = os.path.relpath(filepath, commonprefix)
             logger.debug('File relative path -> '+str(filepath_rel))
             
+            # add file to database
             self.dbmodel.addFile(filehash=filehash, filepath=filepath_rel, title=title)
+            
+            # get thumbnail
+            self.getThumb(filepath, filehash)
+            
             return True
+              
+    def removeFile(self, filehash):
+        self.dbmodel.removeFile(filehash)
+        
+        thumb_path = os.path.join(self.thumbpath, filehash+'.png')
+        if os.path.isfile(thumb_path):
+            os.remove(thumb_path)
         
     def getFileByHash(self, filehash):
         """
@@ -148,7 +179,7 @@ class GalleryManager():
         info = self.dbmodel.getFilesByHash(filehash)
         return info
     
-    def getFileList(self, path=None, excludeDotfiles=True):
+    def getFileList(self, path=None):
         """
         Returns list of lists:
             [str filepath, str hash, bool inDatabase]
@@ -159,7 +190,7 @@ class GalleryManager():
         logger.debug('Getting list of files in database...')
         filepathlist = []
         for root, dirs, files in os.walk(path):
-            if not os.path.basename(root).startswith('.') and excludeDotfiles:
+            if os.path.commonprefix([self.configpath, root]) != self.configpath:
                 paths = [os.path.join(root,f) for f in files]
                 filepathlist+=paths
         
@@ -343,8 +374,98 @@ class GalleryManager():
         ehinfo['new'] = False
         
         self.updateFileInfo(filehash, ehinfo)
+    
+    def clearTemp(self):
+        """
+        Removes anything that was in temp directory.
+        """
+        logger.debug('Clean TEMP dir')
+        if os.path.isdir(self.temppath):
+            shutil.rmtree(self.temppath)
+        os.mkdir(self.temppath)
+    
+    def getThumb(self, filepath, filehash):
+        """
+        Creates thumbnail from first page in archive.
+        Thumbnail is saved as FILEHASH.png in THUMBDIR.
         
-    def removeFile(self, filehash):
-        self.dbmodel.removeFile(filehash)
+        Returns:
+            None - if ERROR
+            filename of thumb - if OK
+        """
+        logger.debug('Creating thumbnail...')
+        
+        # clean temp dir
+        self.clearTemp()
+        
+        # get list of files in archive
+        if filepath.lower().endswith('.7z'):
+            try:
+                fp = open(filepath, 'rb')
+                archive = py7zlib.Archive7z(fp)
+                filelist = archive.getnames()
+            except:
+                logger.warning('Error uncompressing File: %s', filepath)
+                return None
+        elif filepath.lower().endswith('.zip'):
+            try:
+                archive = zipfile.ZipFile(filepath)
+                filelist = archive.namelist()
+            except:
+                logger.warning('Error uncompressing File: %s', filepath)
+                return None
+        elif filepath.lower().endswith('.rar'):
+            try:
+                archive = rarfile.RarFile(filepath)
+                filelist = archive.namelist()
+            except:
+                logger.warning('Error uncompressing File: %s', filepath)
+                return None
+        else:
+            logger.warning('Unsupported file format. Cant create thumb. File: %s', filepath)
+            return None
+        
+        # filter out files that are not images
+        filtered_filelist = []
+        for f in filelist:
+            if f.lower().split('.')[-1] in ['jpg', 'jpeg', 'png', 'bmp', 'gif']:
+                filtered_filelist.append(f)
+
+        # get path to first page
+        filtered_filelist.sort()
+        file_to_use = filtered_filelist[0]
+        
+        # extract first page
+        if filepath.lower().endswith('.7z'):
+            outfile = open(os.path.join(self.temppath, file_to_use), 'wb')
+            outfile.write(archive.getmember(file_to_use).read())
+            outfile.close()
+            fp.close()
+        elif filepath.lower().endswith('.zip'):
+            archive.extract(file_to_use, self.temppath)
+            archive.close()
+        elif filepath.lower().endswith('.rar'):
+            archive.extract(file_to_use, self.temppath)
+            archive.close()
+            
+        # get correct unix path to extracted file
+        filepathlist = []
+        for root, dirs, files in os.walk(self.temppath):
+            paths = [os.path.join(root,f) for f in files]
+            filepathlist+=paths
+        file_to_use = filepathlist[0]
+        old_path = os.path.join(self.temppath, file_to_use)
+        
+        # create thumbnail
+        im = Image.open(old_path)
+        im.thumbnail(self.THUMB_MAXSIZE, Image.ANTIALIAS)
+        new_filename = filehash+'.png'
+        final_path = os.path.join(self.thumbpath, new_filename)
+        im.save(final_path, "PNG")
+        
+        # clean temp dir
+        self.clearTemp()
+        
+        return new_filename
         
         

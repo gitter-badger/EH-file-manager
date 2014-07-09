@@ -13,7 +13,7 @@ To get current development:
 Required dependencies on Linux Ubuntu/Mint 13.10:
 
     sudo apt-get install python python-pip python-sqlite python-qt4 mcomix
-    sudo pip install requests beautifulsoup4
+    sudo pip install requests beautifulsoup4 pylzma rarfile
     
 License
 -------
