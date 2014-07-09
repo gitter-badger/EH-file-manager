@@ -339,6 +339,9 @@ class GalleryManager():
         
         r = requests.get(ehlink)
         html = unicode(r.text).encode("utf8")
+        if len(html)<5000:
+            logger.warning("Length of HTML response is only %s => Failure", str(len(html)))
+            return None
         soup = BeautifulSoup(html)
 
         div_gd2 = soup.body.find('div', attrs={'id':'gd2'})
@@ -370,6 +373,10 @@ class GalleryManager():
         
         originfo = self.getFileByHash(filehash)[0]
         ehinfo = self.infoFromEHentaiLink(ehlink, api)
+        if ehinfo is None:
+            logger.warning('URL update failed')
+            return
+            
         ehinfo['filepath'] = originfo['filepath']
         ehinfo['new'] = False
         

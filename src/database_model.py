@@ -169,7 +169,10 @@ class DatabaseModel():
         # convert utf-8 to unicode
         for ni in newinfo:
             if type(newinfo[ni]) != type(u' '):
-                newinfo[ni] = newinfo[ni].decode('utf-8') 
+                if type(newinfo[ni]) == type(' '):
+                    newinfo[ni] = newinfo[ni].decode('utf-8') 
+                else:
+                    newinfo[ni] = unicode(newinfo[ni])
                 
         logger.debug('SQLite updatefile query: '+str(newinfo))
         
