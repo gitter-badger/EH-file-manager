@@ -10,7 +10,7 @@ To get current development:
 
     git clone https://github.com/kunesj/EH-file-manager.git
 
-Required dependencies on Linux Ubuntu/Mint 13.10:
+Required dependencies on Linux Ubuntu/Mint 14.04 LTS:
 
     sudo apt-get install python python-pip python-sqlite python-qt4 mcomix
     sudo pip install requests beautifulsoup4 pylzma rarfile
