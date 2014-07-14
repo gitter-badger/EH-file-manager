@@ -13,6 +13,7 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
 from gallery_manager import GalleryManager
+from eh_update_dialog import EHUpdateDialog
 
 class GalleryWindow(QMainWindow):
     def __init__(self, gallerypath):
@@ -57,13 +58,18 @@ class GalleryWindow(QMainWindow):
         
         updateFileAction_API = QtGui.QAction('Info from URL (API)', self) 
         updateFileAction_API.setShortcut('Alt+A')
-        updateFileAction_API.setStatusTip('Updates files info with information from URL link (API)')
+        updateFileAction_API.setStatusTip('Updates file info with information from URL link (API)')
         updateFileAction_API.triggered.connect(self.updateInfoFromLink_API)
         
         updateFileAction_HTML = QtGui.QAction('Info from URL (HTML)', self) 
         updateFileAction_HTML.setShortcut('Alt+H')
-        updateFileAction_HTML.setStatusTip('Updates files info with information from URL link (HTML parser)')
+        updateFileAction_HTML.setStatusTip('Updates file info with information from URL link (HTML parser)')
         updateFileAction_HTML.triggered.connect(self.updateInfoFromLink_HTML)
+        
+        updateFileAction_EH = QtGui.QAction('Info from EH', self) 
+        updateFileAction_EH.setShortcut('Alt+E')
+        updateFileAction_EH.setStatusTip('Updates file info with information from EH')
+        updateFileAction_EH.triggered.connect(self.updateInfoFromEH)
 
         findNewFilesAction = QtGui.QAction(QIcon.fromTheme("find"), 'Find new files', self)
         findNewFilesAction.setShortcut('Ctrl+F')
@@ -86,6 +92,7 @@ class GalleryWindow(QMainWindow):
         fileMenu.addAction(removeFileAction)
         fileMenu.addAction(updateFileAction_API)
         fileMenu.addAction(updateFileAction_HTML)
+        fileMenu.addAction(updateFileAction_EH)
         fileMenu.addAction(findNewFilesAction)
         fileMenu.addAction(settingsAction)
         fileMenu.addAction(exitAction)
@@ -179,6 +186,20 @@ class GalleryWindow(QMainWindow):
             if url[1] == True:
                 self.manager.updateFileInfoEHentai(self.selectedFile, str(url[0]), api)
                 self.search()
+                
+    def updateInfoFromEH(self):
+        if self.selectedFile is None:
+            logger.debug('No file selected, nothing to update.')
+            QMessageBox.information(self, 'Message', 'No file selected, nothing to update.')
+        else:
+            gallerylist = self.manager.findFileOnEH(self.selectedFile)
+            app = EHUpdateDialog(self.manager, gallerylist, parent=self)
+            if app.exec_():
+                returned = app.getClicked()
+                if returned is not None:
+                    eh_gallery = returned[3]
+                    self.manager.updateFileInfoEHentai(self.selectedFile, str(eh_gallery), False)
+                    self.search()
         
     def selectFile(self, treeItem):
         """
