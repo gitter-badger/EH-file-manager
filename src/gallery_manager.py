@@ -298,6 +298,127 @@ class GalleryManager():
     def updateFileInfo(self, filehash, newinfo):
         self.dbmodel.updateFile(filehash, newinfo)
     
+    def getListOfEHGalleries(self, filepath):
+        """
+        Returns None if error
+        """
+        sha1hash = self.getSha1HashOfFileInGallery(filepath)
+        
+        if sha1hash is None:
+            return None
+        else:
+            return self.getListOfEHGalleriesWithFile(sha1hash)
+    
+    def getSha1HashOfFileInGallery(self, filepath): 
+        """
+        Returns SHA-1 hash of file in the middle of gallery.
+        Returns None if error
+        """
+        filepath = os.path.join(self.gallerypath, filepath)
+        
+        # clean temp dir
+        self.clearTemp()
+        
+        # get list of files in archive
+        if filepath.lower().endswith('.7z'):
+            try:
+                fp = open(filepath, 'rb')
+                archive = py7zlib.Archive7z(fp)
+                filelist = archive.getnames()
+            except:
+                logger.warning('Error uncompressing File: %s', filepath)
+                return None
+        elif filepath.lower().endswith('.zip'):
+            try:
+                archive = zipfile.ZipFile(filepath)
+                filelist = archive.namelist()
+            except:
+                logger.warning('Error uncompressing File: %s', filepath)
+                return None
+        elif filepath.lower().endswith('.rar'):
+            try:
+                archive = rarfile.RarFile(filepath)
+                filelist = archive.namelist()
+            except:
+                logger.warning('Error uncompressing File: %s', filepath)
+                return None
+        else:
+            logger.warning('Unsupported file format. Cant create thumb. File: %s', filepath)
+            return None
+        
+        # filter out files that are not images
+        filtered_filelist = []
+        for f in filelist:
+            if f.lower().split('.')[-1] in ['jpg', 'jpeg', 'png', 'bmp', 'gif']:
+                filtered_filelist.append(f)
+
+        # get path to page in the middle of file
+        filtered_filelist.sort()
+        file_to_use = filtered_filelist[int(len(filtered_filelist)/2)]
+        
+        # extract page
+        if filepath.lower().endswith('.7z'):
+            outfile = open(os.path.join(self.temppath, file_to_use), 'wb')
+            outfile.write(archive.getmember(file_to_use).read())
+            outfile.close()
+            fp.close()
+        elif filepath.lower().endswith('.zip'):
+            archive.extract(file_to_use, self.temppath)
+            archive.close()
+        elif filepath.lower().endswith('.rar'):
+            archive.extract(file_to_use, self.temppath)
+            archive.close()
+            
+        # get correct unix path to extracted file
+        filepathlist = []
+        for root, dirs, files in os.walk(self.temppath):
+            paths = [os.path.join(root,f) for f in files]
+            filepathlist+=paths
+        file_to_use = filepathlist[0]
+        old_path = os.path.join(self.temppath, file_to_use)
+        
+        # get SHA1 hash
+        afile = open(old_path, 'rb')
+        buf = afile.read()
+        afile.close()
+        hasher = hashlib.sha1()
+        hasher.update(buf)
+        sha1hash = hasher.hexdigest()
+        
+        # clean temp dir
+        self.clearTemp()
+        
+        return sha1hash
+    
+    def getListOfEHGalleriesWithFile(self, img_file_sh1_hash):
+        """
+        Returns list of galleries on EH that have file with given sha1 hash
+        """
+        r = requests.get('http://g.e-hentai.org/?f_shash='+img_file_sh1_hash)
+        html = unicode(r.text).encode("utf8")
+        soup = BeautifulSoup(html)
+        
+        table_itg = soup.body.find('table', attrs={'class':'itg'})
+        
+        result_html_list = table_itg.findAll('tr')[1:]
+        
+        result_list = []
+        for r in result_html_list:
+            tds = r.findAll('td')
+            
+            category = tds[0].find('img').get('alt').lower().strip()
+            published = tds[1].text.strip()
+            uploader = tds[3].text.strip()
+            
+            name_div = tds[2].find('div', attrs={'class':'it5'})
+
+            gallery_name = name_div.text.strip()
+            gallery_url = name_div.find('a').get('href')
+            
+            result_list.append([category, published, gallery_name, gallery_url, uploader])
+        
+        return result_list
+    
     def infoFromEHentaiLink(self, ehlink, api=False):
         """
         Returns ehentai.org gallery metdata from gallery link.
