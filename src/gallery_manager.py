@@ -386,5 +386,16 @@ class GalleryManager():
         filepath_rel = self.getFileByHash(filehash)[0]['filepath']
         filepath = os.path.join(self.gallerypath, filepath_rel)
         
-        return self.ehfetcher.getListOfEHGalleries(filepath)
+        result = []
+        sha1hash = self.ehfetcher.getHashOfFileInGallery(filepath)
+        if sha1hash is not None:
+            logger.debug('Searching by filehash...')
+            result = self.ehfetcher.searchEHByFileHash(sha1hash)
+        
+        if len(result) == 0:
+            logger.debug('Search by hash failed. Searching by name...')
+            filename = os.path.splitext(os.path.basename(filepath_rel))[0]
+            result = self.ehfetcher.searchEHByName(filename)
+        
+        return result
         

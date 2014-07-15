@@ -180,7 +180,7 @@ class GalleryWindow(QMainWindow):
             logger.debug('No file selected, nothing to update.')
             QMessageBox.information(self, 'Message', 'No file selected, nothing to update.')
         else:
-            QMessageBox.information(self, 'Message', 'Will now try to search g.e-hentai.org by SHA-1 hash of image in selected file.')
+            QMessageBox.information(self, 'Message', 'Will now try to search g.e-hentai.org by SHA-1 hash of image in selected file. Will try to search by filename if that fails.')
             gallerylist = self.manager.findFileOnEH(self.selectedFile)
             app = EHUpdateDialog(self.manager, gallerylist, parent=self)
             app.exec_()
@@ -380,6 +380,12 @@ class ShowDetails(QDialog):
         self.ui_new.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
         self.ui_new.setWordWrap(True)
         layout_info.addWidget(self.ui_new) 
+        
+        # Filepath
+        self.ui_filepath = QLabel('<b>Filepath:</b>  $GALLERY/'+self.fileinfo['filepath'])
+        self.ui_filepath.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
+        self.ui_filepath.setWordWrap(True)
+        layout_info.addWidget(self.ui_filepath)
         
         ## Tags
         hr = QFrame()

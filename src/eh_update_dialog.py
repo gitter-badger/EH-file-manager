@@ -33,7 +33,7 @@ class EHUpdateDialog(QDialog):
         rstart+=1
         
         for g in self.gallery_list:
-            new_radio = QRadioButton(str(g[2]))
+            new_radio = QRadioButton(g[2])
             self.radio.append(new_radio)
             layout_main.addWidget(new_radio, rstart, 0)
             rstart+=1

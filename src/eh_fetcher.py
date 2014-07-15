@@ -22,18 +22,7 @@ class EHFetcher():
         self.manager = manager
         self.temppath = self.manager.temppath
     
-    def getListOfEHGalleries(self, filepath):
-        """
-        Returns [] if error
-        """
-        sha1hash = self.getSha1HashOfFileInGallery(filepath)
-        
-        if sha1hash is None:
-            return []
-        else:
-            return self.getListOfEHGalleriesByFile(sha1hash)
-    
-    def getSha1HashOfFileInGallery(self, filepath): 
+    def getHashOfFileInGallery(self, filepath): 
         """
         Input:
             filepath - absolute path to archive file with images
@@ -88,12 +77,28 @@ class EHFetcher():
         
         return sha1hash
     
-    def getListOfEHGalleriesByFile(self, img_file_sh1_hash):
+    def searchEHByFileHash(self, img_file_sh1_hash):
         """
         Returns list of galleries on EH that have file with given sha1 hash
         """
         r = requests.get('http://g.e-hentai.org/?f_shash='+img_file_sh1_hash)
         html = unicode(r.text).encode("utf8")
+        
+        return self.getListOfEHGalleriesFromHTML(html)
+    
+    # TODO - doesnt return some galleries (very perverted?) If not logged in !!!!
+    def searchEHByName(self, name):
+        name = name.replace(',','')
+        args = {'f_search': name}
+        r = requests.get('http://g.e-hentai.org/', params=args)
+        html = unicode(r.text).encode("utf8")
+        
+        return self.getListOfEHGalleriesFromHTML(html)
+        
+    def getListOfEHGalleriesFromHTML(self, html):
+        """
+        Parses utf-8 encoded HTML with EH search result to list of galleries.
+        """
         soup = BeautifulSoup(html)
         
         table_itg = soup.body.find('table', attrs={'class':'itg'})
@@ -103,11 +108,15 @@ class EHFetcher():
             return []
         else:
             result_html_list = table_itg.findAll('tr')[1:]
-        
+                
         result_list = []
         for r in result_html_list:
             tds = r.findAll('td')
             
+            # skip adds
+            if tds[0].find('img') is None:
+                continue
+                        
             category = tds[0].find('img').get('alt').lower().strip()
             published = tds[1].text.strip()
             uploader = tds[3].text.strip()
@@ -120,7 +129,6 @@ class EHFetcher():
             result_list.append([category, published, gallery_name, gallery_url, uploader])
         
         return result_list
-
 
     def infoFromEHentaiLink(self, ehlink):
         """
