@@ -17,6 +17,7 @@ import Image
 from database_model import DatabaseModel
 from settings import Settings
 from eh_fetcher import EHFetcher
+import decompressor
 
 class GalleryManager():
     """
@@ -321,32 +322,15 @@ class GalleryManager():
         # clean temp dir
         self.clearTemp()
         
-        # get list of files in archive
-        if filepath.lower().endswith('.7z'):
-            try:
-                fp = open(filepath, 'rb')
-                archive = py7zlib.Archive7z(fp)
-                filelist = archive.getnames()
-            except:
-                logger.warning('Error uncompressing File: %s', filepath)
-                return None
-        elif filepath.lower().endswith('.zip'):
-            try:
-                archive = zipfile.ZipFile(filepath)
-                filelist = archive.namelist()
-            except:
-                logger.warning('Error uncompressing File: %s', filepath)
-                return None
-        elif filepath.lower().endswith('.rar'):
-            try:
-                archive = rarfile.RarFile(filepath)
-                filelist = archive.namelist()
-            except:
-                logger.warning('Error uncompressing File: %s', filepath)
-                return None
-        else:
-            logger.warning('Unsupported file format. Cant create thumb. File: %s', filepath)
+        # open archive
+        try:
+            archive = decompressor.ArchiveFile(filepath)
+        except:
+            logger.warning('Error uncompressing File: %s', filepath)
             return None
+        
+        # get list of files in archive
+        filelist = archive.namelist()
         
         # filter out files that are not images
         filtered_filelist = []
@@ -359,17 +343,8 @@ class GalleryManager():
         file_to_use = filtered_filelist[0]
         
         # extract first page
-        if filepath.lower().endswith('.7z'):
-            outfile = open(os.path.join(self.temppath, file_to_use), 'wb')
-            outfile.write(archive.getmember(file_to_use).read())
-            outfile.close()
-            fp.close()
-        elif filepath.lower().endswith('.zip'):
-            archive.extract(file_to_use, self.temppath)
-            archive.close()
-        elif filepath.lower().endswith('.rar'):
-            archive.extract(file_to_use, self.temppath)
-            archive.close()
+        archive.extract(file_to_use, self.temppath)
+        archive.close()
             
         # get correct unix path to extracted file
         filepathlist = []

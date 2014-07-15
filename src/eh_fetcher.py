@@ -15,6 +15,8 @@ import requests
 import json
 from bs4 import BeautifulSoup
 
+import decompressor
+
 class EHFetcher():
     def __init__(self, manager):
         self.manager = manager
@@ -41,32 +43,15 @@ class EHFetcher():
         # clean temp dir
         self.manager.clearTemp()
         
-        # get list of files in archive
-        if filepath.lower().endswith('.7z'):
-            try:
-                fp = open(filepath, 'rb')
-                archive = py7zlib.Archive7z(fp)
-                filelist = archive.getnames()
-            except:
-                logger.warning('Error uncompressing File: %s', filepath)
-                return None
-        elif filepath.lower().endswith('.zip'):
-            try:
-                archive = zipfile.ZipFile(filepath)
-                filelist = archive.namelist()
-            except:
-                logger.warning('Error uncompressing File: %s', filepath)
-                return None
-        elif filepath.lower().endswith('.rar'):
-            try:
-                archive = rarfile.RarFile(filepath)
-                filelist = archive.namelist()
-            except:
-                logger.warning('Error uncompressing File: %s', filepath)
-                return None
-        else:
-            logger.warning('Unsupported file format. Unable to extract file. File: %s', filepath)
+        # open archive
+        try:
+            archive = decompressor.ArchiveFile(filepath)
+        except:
+            logger.warning('Error uncompressing File: %s', filepath)
             return None
+        
+        # get list of files in archive
+        filelist = archive.namelist()
         
         # filter out files that are not images
         filtered_filelist = []
@@ -79,17 +64,8 @@ class EHFetcher():
         file_to_use = filtered_filelist[int(len(filtered_filelist)/2)]
         
         # extract page
-        if filepath.lower().endswith('.7z'):
-            outfile = open(os.path.join(self.temppath, file_to_use), 'wb')
-            outfile.write(archive.getmember(file_to_use).read())
-            outfile.close()
-            fp.close()
-        elif filepath.lower().endswith('.zip'):
-            archive.extract(file_to_use, self.temppath)
-            archive.close()
-        elif filepath.lower().endswith('.rar'):
-            archive.extract(file_to_use, self.temppath)
-            archive.close()
+        archive.extract(file_to_use, self.temppath)
+        archive.close()
             
         # get correct unix path to extracted file
         filepathlist = []
