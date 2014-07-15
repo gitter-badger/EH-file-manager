@@ -360,20 +360,24 @@ class ShowDetails(QDialog):
         
         if self.fileinfo['title']!='':
             self.ui_title = QLabel('<b>Title:</b>  '+self.fileinfo['title'])
+            self.ui_title.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
             self.ui_title.setWordWrap(True)
             layout_info.addWidget(self.ui_title)
             
         if self.fileinfo['title_jpn']!='':
             self.ui_title_jpn = QLabel('<b>Title [Jpn]:</b>  '+self.fileinfo['title_jpn'])
+            self.ui_title_jpn.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
             self.ui_title_jpn.setWordWrap(True)
             layout_info.addWidget(self.ui_title_jpn)
             
         self.ui_category = QLabel('<b>Category:</b>  '+self.fileinfo['category'])
+        self.ui_category.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
         self.ui_category.setWordWrap(True)
         layout_info.addWidget(self.ui_category)
         
         # new file
         self.ui_new = QLabel('<b>Newfile:</b>  '+str(self.fileinfo['new']))
+        self.ui_new.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
         self.ui_new.setWordWrap(True)
         layout_info.addWidget(self.ui_new) 
         
@@ -389,6 +393,7 @@ class ShowDetails(QDialog):
         for tc in namespaces:
             if tc in self.fileinfo['tags']:
                 tags = QLabel('<b>'+tc+':</b> '+', '.join(self.fileinfo['tags'][tc]))
+                tags.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
                 tags.setWordWrap(True)
                 layout_info.addWidget(tags)
         
@@ -396,6 +401,7 @@ class ShowDetails(QDialog):
         for tc in self.fileinfo['tags']:
             if not (tc in namespaces):
                 tags = QLabel('<b>'+tc+':</b> '+', '.join(self.fileinfo['tags'][tc]))
+                tags.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
                 tags.setWordWrap(True)
                 layout_info.addWidget(tags)
         
