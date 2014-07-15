@@ -366,13 +366,13 @@ class GalleryManager():
         
         return new_filename
         
-    def updateFileInfoEHentai(self, filehash, ehlink, api=False):
+    def updateFileInfoEHentai(self, filehash, ehlink):
         # add schema to link
         if not (ehlink.startswith('http://') or ehlink.startswith('https://')):
             ehlink = 'http://'+ehlink
         
         originfo = self.getFileByHash(filehash)[0]
-        ehinfo = self.ehfetcher.infoFromEHentaiLink(ehlink, api)
+        ehinfo = self.ehfetcher.infoFromEHentaiLink(ehlink)
         if ehinfo is None:
             logger.warning('URL update failed')
             return

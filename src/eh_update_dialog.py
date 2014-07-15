@@ -15,6 +15,8 @@ class EHUpdateDialog(QDialog):
         self.gallery_list = gallery_list
         self.initUI()
         
+        self.resize(700, 50)
+        
     def initUI(self):
         self.setWindowTitle('Update from EH')
         
@@ -22,7 +24,14 @@ class EHUpdateDialog(QDialog):
         layout_main.setSpacing(5)
         rstart = 0
         
+        # Add radio buttons
         self.radio = []
+        
+        new_radio = QRadioButton('None')
+        self.radio.append(new_radio)
+        layout_main.addWidget(new_radio, rstart, 0)
+        rstart+=1
+        
         for g in self.gallery_list:
             new_radio = QRadioButton(str(g[2]))
             self.radio.append(new_radio)
@@ -47,7 +56,10 @@ class EHUpdateDialog(QDialog):
     def getClicked(self):
         for i in range(0, len(self.radio)):
             if self.radio[i].isChecked():
-                return self.gallery_list[i]
+                if i == 0:
+                    return None
+                else:
+                    return self.gallery_list[i-1]
                 
         return None
         

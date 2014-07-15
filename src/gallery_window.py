@@ -55,20 +55,15 @@ class GalleryWindow(QMainWindow):
         removeFileAction.setShortcut('Ctrl+R')
         removeFileAction.setStatusTip('Remove file from info database')
         removeFileAction.triggered.connect(self.removeFile)
-        
-        updateFileAction_API = QtGui.QAction('Info from URL (API)', self) 
-        updateFileAction_API.setShortcut('Alt+A')
-        updateFileAction_API.setStatusTip('Updates file info with information from URL link (API)')
-        updateFileAction_API.triggered.connect(self.updateInfoFromLink_API)
-        
-        updateFileAction_HTML = QtGui.QAction('Info from URL (HTML)', self) 
-        updateFileAction_HTML.setShortcut('Alt+H')
-        updateFileAction_HTML.setStatusTip('Updates file info with information from URL link (HTML parser)')
-        updateFileAction_HTML.triggered.connect(self.updateInfoFromLink_HTML)
+
+        updateFileAction_Link = QtGui.QAction('Info from EH Link', self) 
+        updateFileAction_Link.setShortcut('Alt+L')
+        updateFileAction_Link.setStatusTip('Updates file info with information from e-hentai.org link (from HTML, API is fallback)')
+        updateFileAction_Link.triggered.connect(self.updateInfoFromLink)
         
         updateFileAction_EH = QtGui.QAction('Info from EH', self) 
         updateFileAction_EH.setShortcut('Alt+E')
-        updateFileAction_EH.setStatusTip('Updates file info with information from EH')
+        updateFileAction_EH.setStatusTip('Updates file info with information from e-hentai.org (automatically finds gallery link)')
         updateFileAction_EH.triggered.connect(self.updateInfoFromEH)
 
         findNewFilesAction = QtGui.QAction(QIcon.fromTheme("find"), 'Find new files', self)
@@ -90,8 +85,7 @@ class GalleryWindow(QMainWindow):
         fileMenu.addAction(addFileAction)
         fileMenu.addAction(editFileAction)
         fileMenu.addAction(removeFileAction)
-        fileMenu.addAction(updateFileAction_API)
-        fileMenu.addAction(updateFileAction_HTML)
+        fileMenu.addAction(updateFileAction_Link)
         fileMenu.addAction(updateFileAction_EH)
         fileMenu.addAction(findNewFilesAction)
         fileMenu.addAction(settingsAction)
@@ -167,14 +161,8 @@ class GalleryWindow(QMainWindow):
         """
         self.manager.close()
         QtCore.QCoreApplication.instance().quit()
-    
-    def updateInfoFromLink_API(self):    
-        self.updateInfoFromLink(api=True)
-        
-    def updateInfoFromLink_HTML(self): 
-        self.updateInfoFromLink(api=False)
-    
-    def updateInfoFromLink(self, api=False):
+
+    def updateInfoFromLink(self):
         """
         Updates files info with information from URL link.
         """
@@ -184,7 +172,7 @@ class GalleryWindow(QMainWindow):
         else:
             url = QInputDialog.getText(self, 'Update file info from url', 'Enter ehentai.org gallery link:')
             if url[1] == True:
-                self.manager.updateFileInfoEHentai(self.selectedFile, str(url[0]), api)
+                self.manager.updateFileInfoEHentai(self.selectedFile, str(url[0]))
                 self.search()
                 
     def updateInfoFromEH(self):
@@ -192,14 +180,15 @@ class GalleryWindow(QMainWindow):
             logger.debug('No file selected, nothing to update.')
             QMessageBox.information(self, 'Message', 'No file selected, nothing to update.')
         else:
+            QMessageBox.information(self, 'Message', 'Will now try to search g.e-hentai.org by SHA-1 hash of image in selected file.')
             gallerylist = self.manager.findFileOnEH(self.selectedFile)
             app = EHUpdateDialog(self.manager, gallerylist, parent=self)
-            if app.exec_():
-                returned = app.getClicked()
-                if returned is not None:
-                    eh_gallery = returned[3]
-                    self.manager.updateFileInfoEHentai(self.selectedFile, str(eh_gallery), False)
-                    self.search()
+            app.exec_()
+            returned = app.getClicked()
+            if returned is not None:
+                eh_gallery = returned[3]
+                self.manager.updateFileInfoEHentai(self.selectedFile, str(eh_gallery))
+                self.search()
         
     def selectFile(self, treeItem):
         """

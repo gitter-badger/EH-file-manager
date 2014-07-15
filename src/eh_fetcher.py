@@ -122,11 +122,14 @@ class EHFetcher():
         return result_list
 
 
-    def infoFromEHentaiLink(self, ehlink, api=False):
+    def infoFromEHentaiLink(self, ehlink):
         """
         Returns ehentai.org gallery metdata from gallery link.
+        if HTML gets error uses EH API (doesnt have namespaces)
         """
-        if api:
+        result = self.infoFromEHentai_HTML(ehlink)
+        
+        if result is None:
             index = ehlink.find('hentai.org/g/')
             splited = ehlink[(index+13):].split('/')
             
@@ -137,7 +140,7 @@ class EHFetcher():
             
             return self.infoFromEHentai_API(gallery_id, gallery_token)
         else:
-            return self.infoFromEHentai_HTML(ehlink)
+            return result
         
     def infoFromEHentai_API(self, gallery_id, gallery_token):
         """
