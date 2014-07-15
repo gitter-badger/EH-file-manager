@@ -26,7 +26,7 @@ class GalleryManager():
     CONFIGDIR = '.config'
     TEMPDIR = '_temp'
     THUMBDIR = 'thumb'
-    THUMB_MAXSIZE = 200, 300
+    THUMB_MAXSIZE = 150, 200
     
     def __init__(self, gallerypath=''):
         self.gallerypath = str(gallerypath)

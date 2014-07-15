@@ -24,7 +24,7 @@ class GalleryWindow(QMainWindow):
         self.selectedFile = None
         
         QMainWindow.__init__(self)   
-        self.resize(800, 500)
+        self.resize(1000, 700)
         self.initUI()        
         
         self.ui_searchbar.setText('')
