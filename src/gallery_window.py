@@ -172,12 +172,14 @@ class GalleryWindow(QMainWindow):
         colNames.append("MD5 Hash")
         colNames.append("Category")
         colNames.append("S")
+        colNames.append("Published")
         colNames.append("Title")
         self.ui_filelist.setHeaderLabels(colNames)
         self.ui_filelist.hideColumn(0) # hide column with hashes
         # set column to min width
         self.ui_filelist.resizeColumnToContents(1)
         self.ui_filelist.resizeColumnToContents(2) 
+        self.ui_filelist.resizeColumnToContents(3)
         
         self.ui_filelist.itemPressed.connect(self.selectFile)
         self.ui_filelist.itemDoubleClicked.connect(self.openFileInReader)
@@ -371,15 +373,19 @@ class GalleryWindow(QMainWindow):
                 status += 'D'
             treeItem.setText(2, status)
             
+            published_date = datetime.datetime.fromtimestamp(f['published']).strftime('%Y-%m-%d %H:%M:%S')
+            treeItem.setText(3, published_date)
+            
             if f['title']!='':
                 title = f['title']
             else:
                 title = f['title_jpn']
-            treeItem.setText(3, title)
+            treeItem.setText(4, title)
         
         # set min size of columns
         self.ui_filelist.resizeColumnToContents(1)
         self.ui_filelist.resizeColumnToContents(2) 
+        self.ui_filelist.resizeColumnToContents(3) 
         
         self.selectedFile = None
         self.showFileDetails()
