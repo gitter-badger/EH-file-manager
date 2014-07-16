@@ -196,6 +196,16 @@ class GalleryManager():
                 paths = [os.path.join(root,f) for f in files]
                 filepathlist+=paths
         
+        # Filter by extension
+        if len(self.getSettings()['allowed_extensions']) > 0:
+            filepathlist_new = []
+            for filepath in filepathlist:
+                ext = os.path.basename(filepath).split('.')[-1]
+                if ext in self.getSettings()['allowed_extensions']:
+                    filepathlist_new.append(filepath)
+                    
+            filepathlist = filepathlist_new
+        
         logger.debug('Found '+str(len(filepathlist))+' files. Getting hash + database state...')
         filelist = []
         for filepath in filepathlist:

@@ -70,6 +70,7 @@ class Settings():
     def getDefaultSettings(self):
         default = {
                     'reader': 'mcomix',
+                    'allowed_extensions': ['zip', '7z', 'rar'],
                     'categories': ['doujinshi', 'manga', 'artist cg sets', 'game cg sets', 'western', 'non-h', 'image sets',                'cosplay', 'asian porn', 'misc'],
                     'categories_enabled': [],
                     'namespaces': ['language', 'parody', 'character', 'group', 'artist', 'male', 'female', 'misc']

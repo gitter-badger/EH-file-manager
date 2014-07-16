@@ -40,8 +40,12 @@ class ArchiveFile():
         """
         Extracts one file from archive to given path
         """
+        if type(path) == type(u''):
+            path = path.encode('utf-8')
+        
         if self.extension == '7z':
-            outfile = open(os.path.join(path, file_to_ext), 'wb')
+            outfile_name = 'img.'+file_to_ext.split('.')[-1]
+            outfile = open(os.path.join(path, outfile_name), 'wb')
             outfile.write(self.archive.getmember(file_to_ext).read())
             outfile.close()
             self.open_7z.close()
@@ -51,7 +55,6 @@ class ArchiveFile():
     
     def close(self):
         if self.extension == '7z':
-            self.archive.close()
             self.open_7z.close()
         elif self.extension in ['zip', 'rar']:
             self.archive.close()
