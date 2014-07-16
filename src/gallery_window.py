@@ -38,39 +38,15 @@ class GalleryWindow(QMainWindow):
         # status bar
         self.statusBar().showMessage('Ready')
         
-        # menubar
+        ## Menubar
         menubar = self.menuBar() 
         
-        openFileAction = QtGui.QAction('Open file', self)
-        openFileAction.setShortcut('Ctrl+O')
-        openFileAction.setStatusTip('Open file in external reader')
-        openFileAction.triggered.connect(self.openFileInReader)
-        
+        # File menu
         addFileAction = QtGui.QAction(QIcon.fromTheme("document-new"), 'Add file', self)
         addFileAction.setShortcut('Ctrl+A')
         addFileAction.setStatusTip('Add new file information to database')
         addFileAction.triggered.connect(self.addFile)
         
-        editFileAction = QtGui.QAction('Edit file', self)
-        editFileAction.setShortcut('Ctrl+E')
-        editFileAction.setStatusTip('Edit file information')
-        editFileAction.triggered.connect(self.editFile)
-        
-        removeFileAction = QtGui.QAction(QIcon.fromTheme("edit-delete"), 'Remove file', self)
-        removeFileAction.setShortcut('Ctrl+R')
-        removeFileAction.setStatusTip('Remove file from info database')
-        removeFileAction.triggered.connect(self.removeFile)
-
-        updateFileAction_Link = QtGui.QAction('Info from EH Link', self) 
-        updateFileAction_Link.setShortcut('Alt+L')
-        updateFileAction_Link.setStatusTip('Updates file info with information from e-hentai.org link (from HTML, API is fallback)')
-        updateFileAction_Link.triggered.connect(self.updateInfoFromLink)
-        
-        updateFileAction_EH = QtGui.QAction('Info from EH', self) 
-        updateFileAction_EH.setShortcut('Alt+E')
-        updateFileAction_EH.setStatusTip('Updates file info with information from e-hentai.org (automatically finds gallery link)')
-        updateFileAction_EH.triggered.connect(self.updateInfoFromEH)
-
         findNewFilesAction = QtGui.QAction(QIcon.fromTheme("find"), 'Find new files', self)
         findNewFilesAction.setShortcut('Ctrl+F')
         findNewFilesAction.setStatusTip('Automatically find new files in gallery and add them to database')
@@ -87,17 +63,44 @@ class GalleryWindow(QMainWindow):
         exitAction.triggered.connect(self.closeEvent)
         
         fileMenu = menubar.addMenu('File')
-        fileMenu.addAction(openFileAction)
         fileMenu.addAction(addFileAction)
-        fileMenu.addAction(editFileAction)
-        fileMenu.addAction(removeFileAction)
-        fileMenu.addAction(updateFileAction_Link)
-        fileMenu.addAction(updateFileAction_EH)
         fileMenu.addAction(findNewFilesAction)
         fileMenu.addAction(settingsAction)
         fileMenu.addAction(exitAction)
         
-        helpMenu = menubar.addMenu('Help')
+        # Edit menu
+        openFileAction = QtGui.QAction('Open in reader', self)
+        openFileAction.setShortcut('Ctrl+O')
+        openFileAction.setStatusTip('Open file in external reader')
+        openFileAction.triggered.connect(self.openFileInReader)
+        
+        editFileAction = QtGui.QAction('Edit file', self)
+        editFileAction.setShortcut('Ctrl+E')
+        editFileAction.setStatusTip('Edit file information')
+        editFileAction.triggered.connect(self.editFile)
+        
+        removeFileAction = QtGui.QAction('Remove file', self)
+        removeFileAction.setShortcut('Ctrl+R')
+        removeFileAction.setStatusTip('Remove file info from database')
+        removeFileAction.triggered.connect(self.removeFile)
+
+        updateFileAction_Link = QtGui.QAction('Info from EH Link', self) 
+        updateFileAction_Link.setStatusTip('Updates file info with information from e-hentai.org link (from HTML, API is fallback)')
+        updateFileAction_Link.triggered.connect(self.updateInfoFromLink)
+        
+        updateFileAction_EH = QtGui.QAction('Info from EH', self) 
+        updateFileAction_EH.setStatusTip('Updates file info with information from e-hentai.org (automatically finds gallery link)')
+        updateFileAction_EH.triggered.connect(self.updateInfoFromEH)
+        
+        editMenu = menubar.addMenu('Edit')
+        editMenu.addAction(openFileAction)
+        editMenu.addAction(editFileAction)
+        editMenu.addAction(removeFileAction)
+        editMenu.addAction(updateFileAction_Link)
+        editMenu.addAction(updateFileAction_EH)
+        
+        ## Help menu
+        #helpMenu = menubar.addMenu('Help')
         
         # Search bar
         self.layout_search = QHBoxLayout()
