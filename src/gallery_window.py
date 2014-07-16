@@ -53,6 +53,10 @@ class GalleryWindow(QMainWindow):
         findNewFilesAction.setStatusTip('Automatically find new files in gallery and add them to database')
         findNewFilesAction.triggered.connect(self.findNewFiles)
         
+        updateNewFilesEHAction = QtGui.QAction('Update new files EH', self)
+        updateNewFilesEHAction.setStatusTip('Automatically updates info of new files with information from EH')
+        updateNewFilesEHAction.triggered.connect(self.updateNewFilesFromEH)
+        
         settingsAction = QtGui.QAction(QIcon.fromTheme("document-properties"), 'Settings', self)
         settingsAction.setShortcut('Ctrl+S')
         settingsAction.setStatusTip('Edit application settings')
@@ -66,6 +70,7 @@ class GalleryWindow(QMainWindow):
         fileMenu = menubar.addMenu('File')
         fileMenu.addAction(addFileAction)
         fileMenu.addAction(findNewFilesAction)
+        fileMenu.addAction(updateNewFilesEHAction)
         fileMenu.addAction(settingsAction)
         fileMenu.addAction(exitAction)
         
@@ -243,6 +248,23 @@ class GalleryWindow(QMainWindow):
                 eh_gallery = returned[3]
                 self.manager.updateFileInfoEHentai(self.selectedFile, str(eh_gallery))
                 self.search()
+                
+    def updateNewFilesFromEH(self):
+        QMessageBox.information(self, 'Message', 'Will try to update all new files in database with information from EH.')
+        
+        newfiles = self.manager.search('', {'new':True})
+        
+        for n in newfiles:
+            gallerylist = self.manager.findFileOnEH(n['hash'])
+            app = EHUpdateDialog(n, gallerylist, parent=self)
+            app.exec_()
+            returned = app.getClicked()
+            if returned is not None:
+                eh_gallery = returned[3]
+                self.manager.updateFileInfoEHentai(n['hash'], str(eh_gallery))
+        
+        QMessageBox.information(self, 'Message', 'Updates finished')
+        self.search()
         
     def selectFile(self, treeItem):
         """
