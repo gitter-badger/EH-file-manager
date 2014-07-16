@@ -199,7 +199,8 @@ class GalleryWindow(QMainWindow):
         else:
             QMessageBox.information(self, 'Message', 'Will now try to search g.e-hentai.org by SHA-1 hash of image in selected file. Will try to search by filename if that fails.')
             gallerylist = self.manager.findFileOnEH(self.selectedFile)
-            app = EHUpdateDialog(self.manager, gallerylist, parent=self)
+            fileinfo = self.manager.getFileByHash(self.selectedFile)[0]
+            app = EHUpdateDialog(fileinfo, gallerylist, parent=self)
             app.exec_()
             returned = app.getClicked()
             if returned is not None:
@@ -332,6 +333,10 @@ class GalleryWindow(QMainWindow):
                 title = f['title_jpn']
             treeItem.setText(3, title)
         
+        # set min size of columns
+        self.ui_filelist.resizeColumnToContents(1)
+        self.ui_filelist.resizeColumnToContents(2) 
+        
         self.selectedFile = None
         self.showFileDetails()
         
@@ -396,22 +401,10 @@ class ShowDetails(QDialog):
         self.ui_category.setWordWrap(True)
         layout_info.addWidget(self.ui_category)
         
-        # new file
-        self.ui_new = QLabel('<b>Newfile:</b>  '+str(self.fileinfo['new']))
-        self.ui_new.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
-        self.ui_new.setWordWrap(True)
-        layout_info.addWidget(self.ui_new) 
-        
-        # Filepath
-        self.ui_filepath = QLabel('<b>Filepath:</b>  $GALLERY/'+self.fileinfo['filepath'])
-        self.ui_filepath.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
-        self.ui_filepath.setWordWrap(True)
-        layout_info.addWidget(self.ui_filepath)
-        
         ## Tags
-        hr = QFrame()
-        hr.setFrameShape(QFrame.HLine)
-        layout_info.addWidget(hr)
+        hr1 = QFrame()
+        hr1.setFrameShape(QFrame.HLine)
+        layout_info.addWidget(hr1)
         
         # get list of main namespaces from config
         namespaces = self.manager.getSettings()['namespaces']
@@ -432,7 +425,31 @@ class ShowDetails(QDialog):
                 tags.setWordWrap(True)
                 layout_info.addWidget(tags)
         
-        # add stretch
+        # no tags
+        if len(self.fileinfo['tags']) == 0:
+            notags = QLabel('No tags')    
+            notags.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
+            notags.setWordWrap(True)
+            layout_info.addWidget(notags)    
+            
+        ## Database info
+        hr2 = QFrame()
+        hr2.setFrameShape(QFrame.HLine)
+        layout_info.addWidget(hr2)
+        
+        # Filepath
+        self.ui_filepath = QLabel('<b>Filepath:</b>  $GALLERY/'+self.fileinfo['filepath'])
+        self.ui_filepath.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
+        self.ui_filepath.setWordWrap(True)
+        layout_info.addWidget(self.ui_filepath)
+        
+        # new file
+        self.ui_new = QLabel('<b>Newfile:</b>  '+str(self.fileinfo['new']))
+        self.ui_new.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
+        self.ui_new.setWordWrap(True)
+        layout_info.addWidget(self.ui_new) 
+        
+        ## add stretch
         layout_info.addStretch()
         
         ## Setup layout

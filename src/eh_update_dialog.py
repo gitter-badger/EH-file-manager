@@ -9,9 +9,9 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
 class EHUpdateDialog(QDialog):
-    def __init__(self, manager, gallery_list = [], parent=None):
+    def __init__(self, fileinfo, gallery_list = [], parent=None):
         QtGui.QDialog.__init__(self, parent)
-        self.manager = manager
+        self.old_fileinfo = fileinfo
         self.gallery_list = gallery_list
         self.initUI()
         
@@ -33,11 +33,28 @@ class EHUpdateDialog(QDialog):
         
         layout_main.addWidget(title)
         
+        # Info
+        label_orig_info = QLabel('<b>Searched file information</b>')
+        font_orig_info = QFont()
+        font_orig_info.setPixelSize(15)
+        label_orig_info.setFont(font_orig_info)
+        label_fp = QLabel('<b>Filepath:</b> $GALLERY/'+self.old_fileinfo['filepath'])
+        label_fp.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
+        label_ft = QLabel('<b>Title:</b> '+self.old_fileinfo['title'])
+        label_ft.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
+        label_ftj = QLabel('<b>Title [Jpn]:</b> '+self.old_fileinfo['title_jpn'])
+        label_ftj.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
+        
+        layout_main.addWidget(label_orig_info)
+        layout_main.addWidget(label_fp)
+        layout_main.addWidget(label_ft)
+        layout_main.addWidget(label_ftj)
+        
         ## Add radio buttons
         self.radio = []
         
         # this is added after everything else
-        none_radio = QRadioButton('< Dont change anything >')
+        none_radio = QRadioButton("Don't change anything")
         self.radio.append(none_radio)
         
         layout_radio = QGridLayout()
@@ -69,7 +86,9 @@ class EHUpdateDialog(QDialog):
             layout_radio.addWidget(new_radio, rstart, 0)
             layout_radio.addWidget(QLabel(u'| '+g[0]), rstart, 1) # category
             layout_radio.addWidget(QLabel(u'| '+g[1]), rstart, 2) # time
-            layout_radio.addWidget(QLabel(u'| '+g[2]), rstart, 3) # title
+            new_title = QLabel(u'| '+g[2])
+            new_title.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
+            layout_radio.addWidget(new_title, rstart, 3) # title
             layout_radio.addWidget(QLabel(u'| '+g[4]), rstart, 4) # uploader
             rstart+=1
         
