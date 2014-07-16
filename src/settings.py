@@ -28,14 +28,15 @@ class Settings():
         if path is None:
             path = self.settingspath
         
+        self.settings = self.getDefaultSettings()
+        
         if self.hasSettings(path):
             logger.debug('Loading existing settings')
             f = open(path, 'rb')
-            self.settings = yaml.load(f)
+            self.settings.update(yaml.load(f))
             f.close()
         else:
             logger.debug('Using default settings')
-            self.settings = self.getDefaultSettings()
     
     def saveSettings(self):
         if self.settings is None:
@@ -69,7 +70,8 @@ class Settings():
     def getDefaultSettings(self):
         default = {
                     'reader': 'mcomix',
-                    'categories': ['doujinshi', 'manga', 'artist cg sets', 'game cg sets', 'western', 'non-h', 'image sets', 'cosplay', 'asian porn', 'misc'],
+                    'categories': ['doujinshi', 'manga', 'artist cg sets', 'game cg sets', 'western', 'non-h', 'image sets',                'cosplay', 'asian porn', 'misc'],
+                    'categories_enabled': [],
                     'namespaces': ['language', 'parody', 'character', 'group', 'artist', 'male', 'female', 'misc']
                     }
         return default

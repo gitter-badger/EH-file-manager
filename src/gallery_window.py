@@ -127,7 +127,12 @@ class GalleryWindow(QMainWindow):
         for c in self.manager.getSettings()['categories']:
             c_btn = QtGui.QPushButton(c, self)
             c_btn.setCheckable(True)
-            c_btn.setChecked(True)
+            
+            if self.manager.getSettings()['categories_enabled'] == []:
+                c_btn.setChecked(True)
+            elif c in self.manager.getSettings()['categories_enabled']:
+                c_btn.setChecked(True)
+            
             self.ui_btn_categories.append(c_btn)
             self.layout_cat_search.addWidget(c_btn)
         
@@ -633,15 +638,18 @@ class EditSettings(QDialog):
         ## Fileinfo form - basic
         self.line_reader = QLineEdit(self.old_settings['reader'])
         self.line_categories = QLineEdit(', '.join(self.old_settings['categories']))
+        self.line_categories_enabled = QLineEdit(', '.join(self.old_settings['categories_enabled']))
         self.line_namespaces = QLineEdit(', '.join(self.old_settings['namespaces']))
         
         layout_main.addWidget(QLabel('<b>Reader:</b> '), rstart + 0, 0)
         layout_main.addWidget(self.line_reader, rstart + 0, 1)
         layout_main.addWidget(QLabel('<b>Categories:</b> '), rstart + 1, 0)
         layout_main.addWidget(self.line_categories, rstart + 1, 1)
-        layout_main.addWidget(QLabel('<b>Namespaces:</b> '), rstart + 2, 0)
-        layout_main.addWidget(self.line_namespaces, rstart + 2, 1)
-        rstart+=3
+        layout_main.addWidget(QLabel('<b>Categories enabled:</b> '), rstart + 2, 0)
+        layout_main.addWidget(self.line_categories_enabled, rstart + 2, 1)
+        layout_main.addWidget(QLabel('<b>Namespaces:</b> '), rstart + 3, 0)
+        layout_main.addWidget(self.line_namespaces, rstart + 3, 1)
+        rstart+=4
         
         ## Buttons
         hr = QFrame()
@@ -672,6 +680,8 @@ class EditSettings(QDialog):
         self.new_settings['reader'] = unicode(self.line_reader.text()).encode('utf-8')
         
         self.new_settings['categories'] = [x.strip() for x in unicode(self.line_categories.text()).encode('utf-8').lower().split(',')]
+        self.new_settings['categories_enabled'] = [x.strip() for x in unicode(self.line_categories_enabled.text()).encode('utf-8').lower().split(',')]
+        
         self.new_settings['namespaces'] = [x.strip() for x in unicode(self.line_namespaces.text()).encode('utf-8').lower().split(',')]
         
         self.manager.saveSettings(self.new_settings)
