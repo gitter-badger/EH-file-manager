@@ -102,7 +102,7 @@ class GalleryWindow(QMainWindow):
         ## Help menu
         #helpMenu = menubar.addMenu('Help')
         
-        # Search bar
+        ## Search bar
         self.layout_search = QHBoxLayout()
         self.layout_search.setSpacing(5)
         
@@ -119,6 +119,21 @@ class GalleryWindow(QMainWindow):
         
         self.ui_layout.addLayout(self.layout_search)
         
+        # search - category filter
+        self.layout_cat_search = QHBoxLayout()
+        self.layout_cat_search.setSpacing(5)
+        
+        self.ui_btn_categories = []
+        for c in self.manager.getSettings()['categories']:
+            c_btn = QtGui.QPushButton(c, self)
+            c_btn.setCheckable(True)
+            c_btn.setChecked(True)
+            self.ui_btn_categories.append(c_btn)
+            self.layout_cat_search.addWidget(c_btn)
+        
+        self.layout_cat_search.addStretch()
+        self.ui_layout.addLayout(self.layout_cat_search)
+        
         # advanced search settings
         self.layout_ad_search = QHBoxLayout()
         self.layout_ad_search.setSpacing(5)
@@ -129,6 +144,7 @@ class GalleryWindow(QMainWindow):
         self.layout_ad_search.addWidget(self.ui_box_new)
         self.layout_ad_search.addWidget(self.ui_box_del)
         
+        self.layout_ad_search.addStretch()
         self.ui_layout.addLayout(self.layout_ad_search)
         
         ## File list
@@ -307,9 +323,15 @@ class GalleryWindow(QMainWindow):
         searchstring = str(self.ui_searchbar.text())
         logger.debug('Searching -> '+str(searchstring))
         
+        search_categories = [] 
+        for c_btn in self.ui_btn_categories:
+            if c_btn.isChecked():
+                search_categories.append(unicode(c_btn.text()))
+        
         self.search_cfg = {
             'new': (self.ui_box_new.checkState()==QtCore.Qt.Checked),
-            'del': (self.ui_box_del.checkState()==QtCore.Qt.Checked)
+            'del': (self.ui_box_del.checkState()==QtCore.Qt.Checked),
+            'categories': search_categories
             }
         
         filteredlist = self.manager.search(searchstring, self.search_cfg)

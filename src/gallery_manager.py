@@ -293,6 +293,13 @@ class GalleryManager():
                 if not os.path.isfile(os.path.join(self.gallerypath, f['filepath'])):
                     filtered_new.append(f)
             filtered = filtered_new 
+        
+        filtered_new = []
+        for c in search_cfg['categories']:
+            for f in filtered:
+                if f['category'].lower().strip() == c.lower().strip():
+                    filtered_new.append(f)
+        filtered = filtered_new 
              
         return filtered
         
