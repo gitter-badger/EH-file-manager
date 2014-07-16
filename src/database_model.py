@@ -6,6 +6,7 @@ logger = logging.getLogger(__name__)
 
 import os
 import sqlite3
+import time
 
 class DatabaseModel():
     FILENAME = 'database.db'
@@ -45,7 +46,7 @@ class DatabaseModel():
         """
         liteconnection = sqlite3.connect(self.dbpath)
         litecursor = liteconnection.cursor()
-        litecursor.execute("CREATE TABLE Files (hash text, filepath text, title text, title_jpn text, category text, tags text, new bool)")
+        litecursor.execute("CREATE TABLE Files (hash text, published int, filepath text, title text, title_jpn text, category text, tags text, new bool)")
         liteconnection.commit()
         liteconnection.close()
         
@@ -88,6 +89,7 @@ class DatabaseModel():
     def addFile(self, filehash, filepath, title, title_jpn='', category='manga', tags=[]):
         fileinfo = {
                     'hash': filehash,
+                    'published': int(time.time()),
                     'filepath': filepath,
                     'title': title,
                     'title_jpn': title_jpn,
@@ -101,6 +103,7 @@ class DatabaseModel():
         """
         fileinfo = {
                     'hash': '',
+                    'published': bool,
                     'filepath': '',
                     'title': '',
                     'title_jpn': '',
@@ -117,15 +120,15 @@ class DatabaseModel():
         
         # convert utf-8 to unicode
         for fi in fileinfo:
-            if type(fileinfo[fi]) != type(u' '):
+            if type(fileinfo[fi]) != type(u' ') and isinstance(fileinfo[fi], basestring):
                 fileinfo[fi] = fileinfo[fi].decode('utf-8') 
                 
         logger.debug('SQLite newfile query: '+str(fileinfo))
         
-        values = (fileinfo['hash'], fileinfo['filepath'], fileinfo['title'],
-                  fileinfo['title_jpn'], fileinfo['category'], fileinfo['tags'],
-                  fileinfo['new'])
-        self.litecursor.execute(u'INSERT INTO Files VALUES (?, ?, ?, ?, ?, ?, ?)', values)
+        values = (fileinfo['hash'], fileinfo['published'], fileinfo['filepath'], 
+                  fileinfo['title'], fileinfo['title_jpn'], fileinfo['category'], 
+                  fileinfo['tags'], fileinfo['new'])
+        self.litecursor.execute(u'INSERT INTO Files VALUES (?, ?, ?, ?, ?, ?, ?, ?)', values)
         self.liteconnection.commit()
     
     def resultToDictionary(self, result):
@@ -136,12 +139,13 @@ class DatabaseModel():
         for i in range(0,len(result)):
             fileinfo.append({
                         'hash': result[i][0],
-                        'filepath': result[i][1],
-                        'title': result[i][2],
-                        'title_jpn': result[i][3],
-                        'category': result[i][4],
-                        'tags': result[i][5],
-                        'new': bool(int(result[i][6]))
+                        'published': result[i][1],
+                        'filepath': result[i][2],
+                        'title': result[i][3],
+                        'title_jpn': result[i][4],
+                        'category': result[i][5],
+                        'tags': result[i][6],
+                        'new': bool(int(result[i][7]))
                         })
         
         for r in fileinfo:
@@ -176,11 +180,11 @@ class DatabaseModel():
                 
         logger.debug('SQLite updatefile query: '+str(newinfo))
         
-        values = (newinfo['filepath'], newinfo['title'],
+        values = (newinfo['filepath'], newinfo['published'], newinfo['title'],
                   newinfo['title_jpn'], newinfo['category'], newinfo['tags'],
                   newinfo['new'], filehash)
 
-        self.litecursor.execute(u'UPDATE Files SET filepath=?, title=?, title_jpn=?, category=?, tags=?, new=? WHERE hash =?', values)
+        self.litecursor.execute(u'UPDATE Files SET filepath=?, published=?, title=?, title_jpn=?, category=?, tags=?, new=? WHERE hash =?', values)
         self.liteconnection.commit()
         
     def removeFile(self, filehash):

@@ -7,6 +7,7 @@ logger = logging.getLogger(__name__)
 import os
 import hashlib
 import re
+from operator import itemgetter
 import shutil
 
 import py7zlib
@@ -223,15 +224,33 @@ class GalleryManager():
         return newfiles
             
     # TODO - finish this (- * % _) http://ehwiki.org/wiki/search
-    def search(self, searchstring, search_cfg):
+    def search(self, searchstring, search_cfg = {}):
         """
         Returns filtered list of files
         Example of searchstring:
             male:glasses "fate zero" artist:"kosuke haruhito" blowjob
+        Search cfg:
+            {
+            'new': bool,
+            'del': bool,
+            'categories': list(str),
+            'sort': str,
+            'sort_rev': bool
+            }
         """
+        # overwrite default search settings
+        default_search_cfg = {
+                            'new': False,
+                            'del': False,
+                            'categories': [],
+                            'sort': 'published',
+                            'sort_rev': False
+                            }
+        default_search_cfg.update(search_cfg)
+        search_cfg = default_search_cfg
+        
         all_files = self.dbmodel.getFiles()
         searchstring = unicode(searchstring.lower()).encode("utf8")
-        
         
         if searchstring=='':
             filtered = all_files
@@ -303,6 +322,9 @@ class GalleryManager():
                     elif f['category'].lower().strip() == c.lower().strip():
                         filtered_new.append(f)
             filtered = filtered_new 
+            
+        # Sort results
+        filtered = sorted(filtered, key=itemgetter(search_cfg['sort']), reverse=search_cfg['sort_rev']) 
              
         return filtered
         
@@ -389,6 +411,8 @@ class GalleryManager():
             
         ehinfo['filepath'] = originfo['filepath']
         ehinfo['new'] = False
+        if not 'published' in ehinfo:
+            ehinfo['published'] = originfo['published']
         
         self.updateFileInfo(filehash, ehinfo)
         

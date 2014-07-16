@@ -7,6 +7,7 @@ logger = logging.getLogger(__name__)
 import os
 import sys
 import thread
+import datetime
 
 from PyQt4 import QtCore, QtGui
 from PyQt4.QtCore import *
@@ -146,8 +147,20 @@ class GalleryWindow(QMainWindow):
         self.ui_box_new = QCheckBox('Only new files', self)
         self.ui_box_del = QCheckBox('Only deleted files', self)
         
+        sorts = ['published', 'title', 'title_jpn']
+        self.ui_combobox_sort = QComboBox()
+        self.ui_combobox_sort.addItems(sorts)
+            
+        selectedIndex = self.ui_combobox_sort.findText(sorts[0])
+        self.ui_combobox_sort.setCurrentIndex(selectedIndex)
+        
+        self.ui_box_sort_rev = QCheckBox('reverse', self)
+        
         self.layout_ad_search.addWidget(self.ui_box_new)
         self.layout_ad_search.addWidget(self.ui_box_del)
+        self.layout_ad_search.addWidget(QLabel('Sort:'))
+        self.layout_ad_search.addWidget(self.ui_combobox_sort)
+        self.layout_ad_search.addWidget(self.ui_box_sort_rev)
         
         self.layout_ad_search.addStretch()
         self.ui_layout.addLayout(self.layout_ad_search)
@@ -333,10 +346,14 @@ class GalleryWindow(QMainWindow):
             if c_btn.isChecked():
                 search_categories.append(unicode(c_btn.text()))
         
+        sort = unicode(self.ui_combobox_sort.itemText(self.ui_combobox_sort.currentIndex())).encode('utf-8')
+        
         self.search_cfg = {
             'new': (self.ui_box_new.checkState()==QtCore.Qt.Checked),
             'del': (self.ui_box_del.checkState()==QtCore.Qt.Checked),
-            'categories': search_categories
+            'categories': search_categories,
+            'sort': sort,
+            'sort_rev': (self.ui_box_sort_rev.checkState()==QtCore.Qt.Checked)
             }
         
         filteredlist = self.manager.search(searchstring, self.search_cfg)
@@ -470,6 +487,13 @@ class ShowDetails(QDialog):
         self.ui_filepath.setWordWrap(True)
         layout_info.addWidget(self.ui_filepath)
         
+        # published
+        published_date = datetime.datetime.fromtimestamp(self.fileinfo['published']).strftime('%Y-%m-%d %H:%M:%S')
+        self.ui_published = QLabel('<b>Published:</b>  '+published_date)
+        self.ui_published.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
+        self.ui_published.setWordWrap(True)
+        layout_info.addWidget(self.ui_published) 
+        
         # new file
         self.ui_new = QLabel('<b>Newfile:</b>  '+str(self.fileinfo['new']))
         self.ui_new.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
@@ -539,6 +563,13 @@ class EditDetails(QDialog):
         layout_main.addWidget(self.combobox_category, rstart + 0, 1)
         rstart+=1
         
+        # Fileinfo form - published
+        self.line_published = QLineEdit(str(self.old_fileinfo['published']))
+        
+        layout_main.addWidget(QLabel('<b>Published (UNIX ts):</b> '), rstart + 0, 0)
+        layout_main.addWidget(self.line_published, rstart + 0, 1)
+        rstart+=1
+        
         # Fileinfo form - newfile
         self.new_box = QCheckBox('New file', self)
         
@@ -605,6 +636,7 @@ class EditDetails(QDialog):
         self.new_fileinfo['title'] = unicode(self.line_title.text()).encode('utf-8')
         self.new_fileinfo['title_jpn'] = unicode(self.line_title_jpn.text()).encode('utf-8')
         self.new_fileinfo['category'] = unicode(self.combobox_category.itemText(self.combobox_category.currentIndex())).encode('utf-8')
+        self.new_fileinfo['published'] = int(self.line_published.text())
         self.new_fileinfo['new'] = (self.new_box.checkState()==QtCore.Qt.Checked)
         
         self.new_fileinfo['tags'] = {}

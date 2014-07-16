@@ -134,6 +134,9 @@ class EHFetcher():
         """
         Returns ehentai.org gallery metdata from gallery link.
         if HTML gets error uses EH API (doesnt have namespaces)
+        
+        posted - UNIX timestamp of uploading file to EH
+        published - UNIX timestamp of adding fileinfo to database (local)
         """
         result = self.infoFromEHentai_HTML(ehlink)
         
