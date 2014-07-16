@@ -41,6 +41,11 @@ class GalleryWindow(QMainWindow):
         # menubar
         menubar = self.menuBar() 
         
+        openFileAction = QtGui.QAction('Open file', self)
+        openFileAction.setShortcut('Ctrl+O')
+        openFileAction.setStatusTip('Open file in external reader')
+        openFileAction.triggered.connect(self.openFileInReader)
+        
         addFileAction = QtGui.QAction(QIcon.fromTheme("document-new"), 'Add file', self)
         addFileAction.setShortcut('Ctrl+A')
         addFileAction.setStatusTip('Add new file information to database')
@@ -82,6 +87,7 @@ class GalleryWindow(QMainWindow):
         exitAction.triggered.connect(self.closeEvent)
         
         fileMenu = menubar.addMenu('File')
+        fileMenu.addAction(openFileAction)
         fileMenu.addAction(addFileAction)
         fileMenu.addAction(editFileAction)
         fileMenu.addAction(removeFileAction)
@@ -122,7 +128,7 @@ class GalleryWindow(QMainWindow):
         
         self.ui_layout.addLayout(self.layout_ad_search)
         
-        # File list
+        ## File list
         self.ui_filelist = QTreeWidget()
         self.ui_filelist.setColumnCount(2)
         colNames = QStringList()
@@ -139,9 +145,17 @@ class GalleryWindow(QMainWindow):
         self.ui_filelist.itemPressed.connect(self.selectFile)
         self.ui_filelist.itemDoubleClicked.connect(self.openFileInReader)
         
+        #create contex menu
+        self.ui_filelist.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
+        self.ui_filelist.addAction(openFileAction)
+        self.ui_filelist.addAction(editFileAction)
+        self.ui_filelist.addAction(removeFileAction)
+        self.ui_filelist.addAction(updateFileAction_Link)
+        self.ui_filelist.addAction(updateFileAction_EH)
+        
         self.ui_layout.addWidget(self.ui_filelist, 1)
         
-        # File details 
+        ## File details 
         self.ui_layout_info = QVBoxLayout()
         self.ui_layout_info.setSpacing(0)
         
@@ -210,21 +224,25 @@ class GalleryWindow(QMainWindow):
         self.ui_layout_info.update()
         self.ui_layout.update()
         
-    def openFileInReader(self, treeItem):
+    def openFileInReader(self):
         """
-        When user double clicks on item in list run external manga viewer (mcomix).
+        When user double clicks on item in list run external manga viewer (default is mcomix).
         """
         logger.debug('Opening file in external reader.')
-        filehash = str(treeItem.text(0))
-        filepath_rel = self.manager.getFileByHash(filehash)[0]['filepath']
-        filepath = os.path.join(self.gallerypath, filepath_rel)
-        
-        # get path to executable of external archive reader
-        reader = self.manager.getSettings()['reader']
-        
-        systemCommand = reader+' "'+filepath.encode('utf-8')+'"'
-        logger.debug('Running: '+systemCommand)
-        thread.start_new_thread(os.system, (systemCommand,))
+        if self.selectedFile is None:
+            logger.debug('No file selected, nothing to open.')
+            QMessageBox.information(self, 'Message', 'No file selected, nothing to open.')
+        else:
+            filehash = str(self.selectedFile)
+            filepath_rel = self.manager.getFileByHash(filehash)[0]['filepath']
+            filepath = os.path.join(self.gallerypath, filepath_rel)
+            
+            # get path to executable of external archive reader
+            reader = self.manager.getSettings()['reader']
+            
+            systemCommand = reader+' "'+filepath.encode('utf-8')+'"'
+            logger.debug('Running: '+systemCommand)
+            thread.start_new_thread(os.system, (systemCommand,))
         
     def addFile(self):
         """
