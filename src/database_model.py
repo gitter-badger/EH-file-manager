@@ -46,7 +46,7 @@ class DatabaseModel():
         """
         liteconnection = sqlite3.connect(self.dbpath)
         litecursor = liteconnection.cursor()
-        litecursor.execute("CREATE TABLE Files (hash text, published int, filepath text, title text, title_jpn text, category text, tags text, new bool)")
+        litecursor.execute("CREATE TABLE Files (hash text, published int, filepath text, title text, title_jpn text, category text, tags text, description text, new bool)")
         liteconnection.commit()
         liteconnection.close()
         
@@ -95,6 +95,7 @@ class DatabaseModel():
                     'title_jpn': title_jpn,
                     'category': category,
                     'tags': {},
+                    'description': '',
                     'new': 1
                     } 
         self.addFileInfo(fileinfo)
@@ -109,6 +110,7 @@ class DatabaseModel():
                     'title_jpn': '',
                     'category': '',
                     'tags': {},
+                    'description': '',
                     'new': bool
                     }    
         """ 
@@ -127,8 +129,8 @@ class DatabaseModel():
         
         values = (fileinfo['hash'], fileinfo['published'], fileinfo['filepath'], 
                   fileinfo['title'], fileinfo['title_jpn'], fileinfo['category'], 
-                  fileinfo['tags'], fileinfo['new'])
-        self.litecursor.execute(u'INSERT INTO Files VALUES (?, ?, ?, ?, ?, ?, ?, ?)', values)
+                  fileinfo['tags'], fileinfo['description'], fileinfo['new'])
+        self.litecursor.execute(u'INSERT INTO Files VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', values)
         self.liteconnection.commit()
     
     def resultToDictionary(self, result):
@@ -145,7 +147,8 @@ class DatabaseModel():
                         'title_jpn': result[i][4],
                         'category': result[i][5],
                         'tags': result[i][6],
-                        'new': bool(int(result[i][7]))
+                        'description': result[i][7],
+                        'new': bool(int(result[i][8]))
                         })
         
         for r in fileinfo:
@@ -182,9 +185,9 @@ class DatabaseModel():
         
         values = (newinfo['filepath'], newinfo['published'], newinfo['title'],
                   newinfo['title_jpn'], newinfo['category'], newinfo['tags'],
-                  newinfo['new'], filehash)
+                  newinfo['description'], newinfo['new'], filehash)
 
-        self.litecursor.execute(u'UPDATE Files SET filepath=?, published=?, title=?, title_jpn=?, category=?, tags=?, new=? WHERE hash =?', values)
+        self.litecursor.execute(u'UPDATE Files SET filepath=?, published=?, title=?, title_jpn=?, category=?, tags=?, description=?, new=? WHERE hash =?', values)
         self.liteconnection.commit()
         
     def removeFile(self, filehash):

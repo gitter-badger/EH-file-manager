@@ -413,6 +413,8 @@ class GalleryManager():
         ehinfo['new'] = False
         if not 'published' in ehinfo:
             ehinfo['published'] = originfo['published']
+        if not 'description' in ehinfo:
+            ehinfo['description'] = originfo['description']
         
         self.updateFileInfo(filehash, ehinfo)
         

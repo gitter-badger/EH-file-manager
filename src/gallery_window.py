@@ -451,6 +451,11 @@ class ShowDetails(QDialog):
         self.ui_category.setWordWrap(True)
         layout_info.addWidget(self.ui_category)
         
+        self.ui_description = QLabel('<b>Description:</b>  '+self.fileinfo['description'])
+        self.ui_description.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
+        self.ui_description.setWordWrap(True)
+        layout_info.addWidget(self.ui_description)
+        
         ## Tags
         hr1 = QFrame()
         hr1.setFrameShape(QFrame.HLine)
@@ -569,6 +574,13 @@ class EditDetails(QDialog):
         layout_main.addWidget(self.combobox_category, rstart + 0, 1)
         rstart+=1
         
+        # Fileinfo form - description
+        self.line_description = QTextEdit(self.old_fileinfo['description'])
+        
+        layout_main.addWidget(QLabel('<b>Description:</b> '), rstart + 0, 0)
+        layout_main.addWidget(self.line_description, rstart + 0, 1)
+        rstart+=1
+        
         # Fileinfo form - published
         self.line_published = QLineEdit(str(self.old_fileinfo['published']))
         
@@ -642,6 +654,7 @@ class EditDetails(QDialog):
         self.new_fileinfo['title'] = unicode(self.line_title.text()).encode('utf-8')
         self.new_fileinfo['title_jpn'] = unicode(self.line_title_jpn.text()).encode('utf-8')
         self.new_fileinfo['category'] = unicode(self.combobox_category.itemText(self.combobox_category.currentIndex())).encode('utf-8')
+        self.new_fileinfo['description'] = unicode(self.line_description.toPlainText()).encode('utf-8')
         self.new_fileinfo['published'] = int(self.line_published.text())
         self.new_fileinfo['new'] = (self.new_box.checkState()==QtCore.Qt.Checked)
         
