@@ -16,12 +16,12 @@ from gallery_manager import GalleryManager
 def main():
     # Parasing input prarmeters
     parser = argparse.ArgumentParser(
-        description='Man2 (Manga Manager)'
+        description='EH file manager'
     )
     parser.add_argument(
         '-g', '--gallery',
         default=None,
-        help='Path to directory with manga gellery')
+        help='Path to directory with archive files')
     parser.add_argument(
         '-d', '--debug',
         action='store_true',
