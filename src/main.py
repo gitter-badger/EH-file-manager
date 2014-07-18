@@ -7,11 +7,10 @@ logger = logging.getLogger(__name__)
 
 import argparse
 import sys
-import os
 
 from PyQt4.QtGui import QApplication, QMessageBox, QFileDialog
 
-from gallery_window import GalleryWindow
+from gui_manager_window import ManagerWindow
 from gallery_manager import GalleryManager
     
 def main():
@@ -77,7 +76,7 @@ def main():
     app.exit()
     
     # Run main app
-    gw = GalleryWindow(gallerypath)
+    mw = ManagerWindow(gallerypath)
     sys.exit(app.exec_())
     
         

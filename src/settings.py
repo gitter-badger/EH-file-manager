@@ -5,8 +5,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 import os
-import sys
-
 import yaml
 
 class Settings():
@@ -59,7 +57,7 @@ class Settings():
         
         try:
             f = open(path, 'rb')
-            obj = yaml.load(f)
+            yaml.load(f)
             f.close()
         except:
             logger.warning('Bad settings file/path!!!')

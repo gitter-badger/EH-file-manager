@@ -7,10 +7,6 @@ logger = logging.getLogger(__name__)
 import os
 import hashlib
 
-import py7zlib
-import rarfile
-import zipfile
-
 import requests
 import json
 from bs4 import BeautifulSoup

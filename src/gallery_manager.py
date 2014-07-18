@@ -10,9 +10,6 @@ import re
 from operator import itemgetter
 import shutil
 
-import py7zlib
-import rarfile
-import zipfile
 import Image
 
 from database_model import DatabaseModel
