@@ -4,6 +4,9 @@ The goal of this little project it to create a manga managment system that could
 
 The main reason why was this project started, is that even though EH gallery system is very good at showing you what you want to find, its very hard to find the something in the heap of downloaded files you get after browsing the site for a while.
 
+Preview: 
+![ScreenShot](https://raw.github.com/kunesj/EH-file-manager/master/doc/preview.png)
+
 Install
 -------
 To get current development:
