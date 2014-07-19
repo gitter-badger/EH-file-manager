@@ -29,7 +29,7 @@ class EditSettings(QDialog):
         
         ## Fileinfo form - basic
         self.line_reader = QLineEdit(self.old_settings['reader'])
-        self.line_allow_ext = QLineEdit(self.old_settings['allowed_extensions'])
+        self.line_allow_ext = QLineEdit(', '.join(self.old_settings['allowed_extensions']))
         self.line_categories = QLineEdit(', '.join(self.old_settings['categories']))
         self.line_categories_enabled = QLineEdit(', '.join(self.old_settings['categories_enabled']))
         self.line_namespaces = QLineEdit(', '.join(self.old_settings['namespaces']))
