@@ -1,10 +1,10 @@
 EH file manager
 ======
-The goal of this little project it to create a manga managment system that could be fully used as off-line version of e-hentai.org gallery system.
+The goal of this little project it to create a file managment system that could be fully used as off-line version of e-hentai.org gallery system.
 
-The main reason why was this project started, is that even though EH gallery system is very good at showing you what you want to find, its very hard to find the something in the heap of downloaded files you get after browsing the site for a while.
+The main reason why was this project started, is that even though EH is very good at showing you what you want to find, its very hard to find something in the heap of downloaded files you get after browsing the site for a while.
 
-Preview: 
+Preview (v0.3): 
 ![ScreenShot](https://raw.github.com/kunesj/EH-file-manager/master/doc/preview.png)
 
 Install
@@ -26,6 +26,22 @@ https://www.gnu.org/licenses/gpl-2.0.txt
 
 Changelog
 ---------
+0.3
+
+- Added thumbnail to file details
+- Selectable text in file details
+- Added publish time and description to file details
+- GUI - find new files
+- GUI - update search results from EH
+- GUI - update from EH
+- Search for fileinfo on EH by imagehash or name
+- Option to automatically search EH when adding files
+- Search - filter by categories
+- Search - search by filename
+- Search - sort search results (published, title, title jpn)
+- Settings - added allowed file extensions, default enabled categories
+- Context menu
+
 0.2
 
 - Changed name to "EH file manager"
