@@ -314,8 +314,26 @@ class ManagerWindow(QMainWindow):
             )
             
         if (newfilepath is not None) and (newfilepath != ''):
-            newfilepath = str(newfilepath).encode("utf8")
-            self.manager.addFile(newfilepath)
+            newfilepath = unicode(newfilepath).encode("utf8")
+            filehash = self.manager.getHash(newfilepath)
+            self.manager.addFile(newfilepath, filehash)
+            
+            msgBox = QMessageBox()
+            msgBox.setText("Do you want update file info from EH?")
+            msgBox.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+            msgBox.setDefaultButton(QMessageBox.Yes)
+            ret = msgBox.exec_()
+            
+            if ret == QMessageBox.Yes:
+                gallerylist = self.manager.findFileOnEH(filehash)
+                fileinfo = self.manager.getFileByHash(filehash)[0]
+                app = EHUpdateDialog(fileinfo, gallerylist, parent=self)
+                app.exec_()
+                returned = app.getClicked()
+                if returned is not None:
+                    eh_gallery = returned[3]
+                    self.manager.updateFileInfoEHentai(filehash, str(eh_gallery))
+            
             self.search()
         else:
             logger.debug('No filepath selected')
