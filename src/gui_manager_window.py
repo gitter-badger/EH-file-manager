@@ -16,6 +16,7 @@ from gallery_manager import GalleryManager
 from gui_eh_update_dialog import EHUpdateDialog
 from gui_edit_settings import EditSettings
 from gui_edit_details import EditDetails
+from gui_find_new_dialog import FindNewDialog
 
 class ManagerWindow(QMainWindow):
     def __init__(self, gallerypath):
@@ -350,12 +351,10 @@ class ManagerWindow(QMainWindow):
             
     def findNewFiles(self):
         self.statusBar().showMessage('Searching for new files...')
-        QMessageBox.information(self, 'Find new files', 'Manager will now try to find new files.')
+        QtCore.QCoreApplication.processEvents()
         
-        newfiles = self.manager.addNewFiles()
-        
-        self.statusBar().showMessage('Ready')
-        QMessageBox.information(self, 'Find new files', 'Manager found '+str(newfiles)+' new files.')
+        app = FindNewDialog(self.manager, parent=self)
+        app.exec_()
         
         self.search()
         

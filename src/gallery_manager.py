@@ -213,22 +213,23 @@ class GalleryManager():
                 
         return filelist
         
-    def addNewFiles(self):
+    def addFiles(self, filelist, new=False):
         """
-        Adds new files in gallery to database
-        returns number of newfiles added
+        if new==True adds only files that are not in database
+        [str filepath, str filehash, bool inDatabase]
+        returns number of files added
         """
-        filelist = self.getFileList()
+        logger.debug('Adding files to database...')
         
-        logger.debug('Adding new files to database...')
-        newfiles = 0
+        added = 0
         for f in filelist:
-            if f[2] is False:
+            if new and not f[2]:
                 self.addFile(filepath = f[0], filehash = f[1])
-                newfiles+=1
+                added+=1
+                
+        logger.debug('Added '+str(len(filelist))+' files to database.')
         
-        logger.debug('Added '+str(newfiles)+' new files to database.')
-        return newfiles
+        return added
             
     # TODO - finish this (- * % _) http://ehwiki.org/wiki/search
     def search(self, searchstring, search_cfg = {}):
