@@ -254,17 +254,22 @@ class ManagerWindow(QMainWindow):
         QMessageBox.information(self, 'Message', 'Will try to update all new files in database with information from EH.')
         
         newfiles = self.manager.search('', {'new':True})
+        QMessageBox.information(self, 'Message', 'Found '+str(len(newfiles))+' new files in database')
         
+        edited = 0
         for n in newfiles:
             gallerylist = self.manager.findFileOnEH(n['hash'])
+            if len(gallerylist) == 0:
+                continue
             app = EHUpdateDialog(n, gallerylist, parent=self)
             app.exec_()
             returned = app.getClicked()
             if returned is not None:
+                edited+=1
                 eh_gallery = returned[3]
                 self.manager.updateFileInfoEHentai(n['hash'], str(eh_gallery))
         
-        QMessageBox.information(self, 'Message', 'Updates finished')
+        QMessageBox.information(self, 'Message', 'Update finished:\n'+'Changed files: '+str(edited)+'\nNot Changed: '+str(len(newfiles)-edited))
         self.search()
         
     def selectFile(self, treeItem):
