@@ -17,6 +17,7 @@ from gui_eh_update_dialog import EHUpdateDialog
 from gui_edit_settings import EditSettings
 from gui_edit_details import EditDetails
 from gui_find_new_dialog import FindNewDialog
+from gui_update_search_dialog import UpdateSearchDialog
 
 class ManagerWindow(QMainWindow):
     def __init__(self, gallerypath):
@@ -25,6 +26,7 @@ class ManagerWindow(QMainWindow):
         self.gallerypath = unicode(gallerypath)
         self.manager = GalleryManager(self.gallerypath)
         self.selectedFile = None
+        self.filteredlist = None
         
         QMainWindow.__init__(self)   
         self.resize(1000, 700)
@@ -55,9 +57,9 @@ class ManagerWindow(QMainWindow):
         findNewFilesAction.setStatusTip('Automatically find new files in gallery and add them to database')
         findNewFilesAction.triggered.connect(self.findNewFiles)
         
-        updateNewFilesEHAction = QtGui.QAction('Update new files EH', self)
-        updateNewFilesEHAction.setStatusTip('Automatically updates info of new files with information from EH')
-        updateNewFilesEHAction.triggered.connect(self.updateNewFilesFromEH)
+        updateSearchEHAction = QtGui.QAction('Update search from EH', self)
+        updateSearchEHAction.setStatusTip('Automatically updates info of searched files with information from EH')
+        updateSearchEHAction.triggered.connect(self.updateSearchFromEH)
         
         settingsAction = QtGui.QAction(QIcon.fromTheme("document-properties"), 'Settings', self)
         settingsAction.setShortcut('Ctrl+S')
@@ -72,7 +74,7 @@ class ManagerWindow(QMainWindow):
         fileMenu = menubar.addMenu('File')
         fileMenu.addAction(addFileAction)
         fileMenu.addAction(findNewFilesAction)
-        fileMenu.addAction(updateNewFilesEHAction)
+        fileMenu.addAction(updateSearchEHAction)
         fileMenu.addAction(settingsAction)
         fileMenu.addAction(exitAction)
         
@@ -250,27 +252,14 @@ class ManagerWindow(QMainWindow):
                 eh_gallery = returned[3]
                 self.manager.updateFileInfoEHentai(self.selectedFile, str(eh_gallery))
                 self.search()
-                
-    def updateNewFilesFromEH(self):
-        QMessageBox.information(self, 'Message', 'Will try to update all new files in database with information from EH.')
         
-        newfiles = self.manager.search('', {'new':True})
-        QMessageBox.information(self, 'Message', 'Found '+str(len(newfiles))+' new files in database')
+    def updateSearchFromEH(self):
+        self.statusBar().showMessage('Updating filtered list of files...')
+        QtCore.QCoreApplication.processEvents()
         
-        edited = 0
-        for n in newfiles:
-            gallerylist = self.manager.findFileOnEH(n['hash'])
-            if len(gallerylist) == 0:
-                continue
-            app = EHUpdateDialog(n, gallerylist, parent=self)
-            app.exec_()
-            returned = app.getClicked()
-            if returned is not None:
-                edited+=1
-                eh_gallery = returned[3]
-                self.manager.updateFileInfoEHentai(n['hash'], str(eh_gallery))
+        app = UpdateSearchDialog(self.manager, self.filteredlist, parent=self)
+        app.exec_()
         
-        QMessageBox.information(self, 'Message', 'Update finished:\n'+'Changed files: '+str(edited)+'\nNot Changed: '+str(len(newfiles)-edited))
         self.search()
         
     def selectFile(self, treeItem):
@@ -385,10 +374,10 @@ class ManagerWindow(QMainWindow):
             'sort_rev': (self.ui_box_sort_rev.checkState()==QtCore.Qt.Checked)
             }
         
-        filteredlist = self.manager.search(searchstring, self.search_cfg)
+        self.filteredlist = self.manager.search(searchstring, self.search_cfg)
         
         self.ui_filelist.clear()
-        for f in filteredlist:
+        for f in self.filteredlist:
             treeItem = QTreeWidgetItem(self.ui_filelist)
             treeItem.setText(0, f['hash'])
             treeItem.setText(1, f['category'])
