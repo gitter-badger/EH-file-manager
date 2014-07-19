@@ -6,6 +6,7 @@ logger = logging.getLogger(__name__)
 
 import os
 import hashlib
+import time
 
 import requests
 import json
@@ -17,6 +18,34 @@ class EHFetcher():
     def __init__(self, manager):
         self.manager = manager
         self.temppath = self.manager.temppath
+        
+    def getEHError(self, html):
+        """
+        Returns
+            0 - if no error
+            1 - if html is overload error message
+            2 - if html is banned message
+            3 - if html is undefined error message
+        """
+        soup = BeautifulSoup(html)
+        
+        div_first = soup.body.find('div')
+        if div_first is None:
+            # no div in whole html == banned
+            return 2
+        
+        divs = div_first.findAll('div')
+        if divs == []:
+            # its not error div
+            return 0
+        
+        err = 0
+        if divs[0].text.strip() == 'An Error Has Occurred':
+            err = 3
+            if divs[1].text.strip().startswith('You are opening pages too fast'):
+                err = 1
+            
+        return err
     
     def getHashOfFileInGallery(self, filepath): 
         """
@@ -73,6 +102,7 @@ class EHFetcher():
         
         return sha1hash
     
+    # TODO - exhentai search
     def searchEHByFileHash(self, img_file_sh1_hash):
         """
         Returns list of galleries on EH that have file with given sha1 hash
@@ -81,33 +111,37 @@ class EHFetcher():
         html = unicode(r.text).encode("utf8")
         
         return self.getListOfEHGalleriesFromHTML(html)
-    
-    # TODO - doesnt return some galleries (very perverted?) If not logged in !!!!
-    def searchEHByName(self, name):
-        name = name.replace(',','')
-        args = {'f_search': name}
-        r = requests.get('http://g.e-hentai.org/', params=args)
-        html = unicode(r.text).encode("utf8")
-        
-        return self.getListOfEHGalleriesFromHTML(html)
         
     def getListOfEHGalleriesFromHTML(self, html):
         """
         Parses utf-8 encoded HTML with EH search result to list of galleries.
+        Returns:
+            result_list - list of EH galleries
+            err - getEHErrors
         """
+        # Test for html error
+        err = self.getEHError(html)
+        if err!=0:
+            return [], err
+        
+        
         soup = BeautifulSoup(html)
         
         table_itg = soup.body.find('table', attrs={'class':'itg'})
         
         if table_itg is None:
             logger.debug('No gallery with same file found on EH')
-            return []
+            return [], err
         else:
             result_html_list = table_itg.findAll('tr')[1:]
                 
         result_list = []
         for r in result_html_list:
             tds = r.findAll('td')
+            
+            if len(tds)<3:
+                logger.warning('Bad TR: '+str(tds.text))
+                continue
             
             # skip adds
             if tds[0].find('img') is None:
@@ -124,19 +158,28 @@ class EHFetcher():
             
             result_list.append([category, published, gallery_name, gallery_url, uploader])
         
-        return result_list
+        return result_list, err
 
     def infoFromEHentaiLink(self, ehlink):
         """
-        Returns ehentai.org gallery metdata from gallery link.
         if HTML gets error uses EH API (doesnt have namespaces)
+        Returns:
+            result - ehentai.org gallery metdata from gallery link.
+            err - error codes from:
+                        getEHError
+                        infoFromEHentai_API
+                        infoFromEHentai_HTML
         
         posted - UNIX timestamp of uploading file to EH
         published - UNIX timestamp of adding fileinfo to database (local)
         """
-        result = self.infoFromEHentai_HTML(ehlink)
+        result, err = self.infoFromEHentai_HTML(ehlink)
         
-        if result is None:
+        # if html is not accesable - fallback to API
+        if err==11:
+            # less ban
+            time.sleep(4)
+            
             index = ehlink.find('hentai.org/g/')
             splited = ehlink[(index+13):].split('/')
             
@@ -145,37 +188,57 @@ class EHFetcher():
             
             logger.debug('EH id - '+str(gallery_id)+' token - '+str(gallery_token))
             
-            return self.infoFromEHentai_API(gallery_id, gallery_token)
-        else:
-            return result
+            result, err = self.infoFromEHentai_API(gallery_id, gallery_token)
+        
+        return result, err
         
     def infoFromEHentai_API(self, gallery_id, gallery_token):
         """
-        Returns ehentai.org gallery metadata from gallery_id and gallery_token.
+        Returns:
+            ehentai.org gallery metadata from gallery_id and gallery_token.
+            err:
+                20 - if no API error
+                21 - if API error
         http://ehwiki.org/wiki/API
         """
+        err = 20
         payload = json.dumps({'method': 'gdata', 'gidlist': [[gallery_id, gallery_token]]})
         headers = {'content-type': 'application/json'}
         
         r = requests.post("http://g.e-hentai.org/api.php", data=payload, headers=headers)
-        gallery_info = r.json()['gmetadata'][0]
+        try:
+            gallery_info = r.json()['gmetadata'][0]
+        except:
+            logger.error('Error connecting to EH API')
+            gallery_info = []
+            err = 21
+        else:
+            gallery_info['tags'] = {'misc':gallery_info['tags']}
+            gallery_info['category'] = gallery_info['category'].lower()
         
-        gallery_info['tags'] = {'misc':gallery_info['tags']}
-        gallery_info['category'] = gallery_info['category'].lower()
-        
-        return gallery_info 
+        return gallery_info, err
         
     def infoFromEHentai_HTML(self, ehlink):
         """
-        Returns ehentai.org gallery metadata parsed from html file.
+        Returns:
+            ehentai.org gallery metadata parsed from html file.
+            err:
+                getEHError codes
+                11 - no gallery info accesable (gallery on exhentai)
         """
-        fileinfo = {}
-        
         r = requests.get(ehlink)
         html = unicode(r.text).encode("utf8")
+        
+        # Test for html error
+        err = self.getEHError(html)
+        if err!=0:
+            return {}, err
+        
         if len(html)<5000:
             logger.warning("Length of HTML response is only %s => Failure", str(len(html)))
-            return None
+            return {}, 11
+            
+        fileinfo = {}
         soup = BeautifulSoup(html)
 
         div_gd2 = soup.body.find('div', attrs={'id':'gd2'})
@@ -198,4 +261,4 @@ class EHFetcher():
             
             fileinfo['tags'][cat] = tags
 
-        return fileinfo
+        return fileinfo, err

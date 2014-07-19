@@ -223,6 +223,27 @@ class ManagerWindow(QMainWindow):
         """
         self.manager.close()
         QtCore.QCoreApplication.instance().quit()
+        
+    def showError(self, err):
+        """
+        Shows message box with error
+        """
+        if err%10==0:
+            return # no error
+        elif err==1:
+            QMessageBox.warning(self, 'Error', 'Failed: EH Overload')
+        elif err==2:
+            QMessageBox.warning(self, 'Error', 'Failed: EH Banned')
+        elif err==3:
+            QMessageBox.warning(self, 'Error', 'Failed: EH undefined error')
+        elif err==11:
+            QMessageBox.warning(self, 'Error', 'Failed: EH gallery html page is not accesable')
+        elif err==21:
+            QMessageBox.warning(self, 'Error', 'Failed: EH API error')
+        elif err==31:
+            QMessageBox.warning(self, 'Error', 'Failed: Image hash couldnt be generated')
+        else:
+            QMessageBox.warning(self, 'Error', 'Failed: '+str(err))
 
     def updateInfoFromLink(self):
         """
@@ -234,24 +255,36 @@ class ManagerWindow(QMainWindow):
         else:
             url = QInputDialog.getText(self, 'Update file info from url', 'Enter ehentai.org gallery link:')
             if url[1] == True:
-                self.manager.updateFileInfoEHentai(self.selectedFile, str(url[0]))
-                self.search()
+                err = self.manager.updateFileInfoEHentai(self.selectedFile, str(url[0]))
+                
+                self.showError(err)
+                
+                if err==0:
+                    self.search()
                 
     def updateInfoFromEH(self):
         if self.selectedFile is None:
             logger.debug('No file selected, nothing to update.')
             QMessageBox.information(self, 'Message', 'No file selected, nothing to update.')
         else:
-            QMessageBox.information(self, 'Message', 'Will now try to search g.e-hentai.org by SHA-1 hash of image in selected file. Will try to search by filename if that fails.')
-            gallerylist = self.manager.findFileOnEH(self.selectedFile)
+            QMessageBox.information(self, 'Message', 'Will now try to search for information on EH with hash of image in selected file.')
+            gallerylist, err = self.manager.findFileOnEH(self.selectedFile)
+            if err!=0:
+                self.showError(err)
+                return
+            
             fileinfo = self.manager.getFileByHash(self.selectedFile)[0]
             app = EHUpdateDialog(fileinfo, gallerylist, parent=self)
             app.exec_()
             returned = app.getClicked()
             if returned is not None:
                 eh_gallery = returned[3]
-                self.manager.updateFileInfoEHentai(self.selectedFile, str(eh_gallery))
-                self.search()
+                err = self.manager.updateFileInfoEHentai(self.selectedFile, str(eh_gallery))
+                
+                self.showError(err)
+                
+                if err==0:
+                    self.search()
         
     def updateSearchFromEH(self):
         self.statusBar().showMessage('Updating filtered list of files...')
@@ -325,14 +358,20 @@ class ManagerWindow(QMainWindow):
             ret = msgBox.exec_()
             
             if ret == QMessageBox.Yes:
-                gallerylist = self.manager.findFileOnEH(filehash)
+                gallerylist, err = self.manager.findFileOnEH(filehash)
+                if err!=0:
+                    self.showError(err)
+                    return
+                
                 fileinfo = self.manager.getFileByHash(filehash)[0]
                 app = EHUpdateDialog(fileinfo, gallerylist, parent=self)
                 app.exec_()
                 returned = app.getClicked()
                 if returned is not None:
                     eh_gallery = returned[3]
-                    self.manager.updateFileInfoEHentai(filehash, str(eh_gallery))
+                    err = self.manager.updateFileInfoEHentai(filehash, str(eh_gallery))
+                    
+                    self.showError(err)
             
             self.search()
         else:

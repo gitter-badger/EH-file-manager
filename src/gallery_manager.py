@@ -9,6 +9,7 @@ import hashlib
 import re
 from operator import itemgetter
 import shutil
+import time
 
 import Image
 
@@ -407,15 +408,20 @@ class GalleryManager():
         return new_filename
         
     def updateFileInfoEHentai(self, filehash, ehlink):
+        """
+        Returns:
+            0 if OK
+            EH fetcher error code, if not
+        """
         # add schema to link
         if not (ehlink.startswith('http://') or ehlink.startswith('https://')):
             ehlink = 'http://'+ehlink
         
         originfo = self.getFileByHash(filehash)[0]
-        ehinfo = self.ehfetcher.infoFromEHentaiLink(ehlink)
-        if ehinfo is None:
+        ehinfo, err = self.ehfetcher.infoFromEHentaiLink(ehlink)
+        if err!=0:
             logger.warning('URL update failed')
-            return
+            return err
             
         ehinfo['filepath'] = originfo['filepath']
         ehinfo['new'] = False
@@ -426,7 +432,15 @@ class GalleryManager():
         
         self.updateFileInfo(filehash, ehinfo)
         
+        return 0
+        
     def findFileOnEH(self, filehash):
+        """
+        Returns:
+            result - list of galleries
+            err - EH fetcher error code
+            31 - sha1hash of image couldnt be generated
+        """
         filepath_rel = self.getFileByHash(filehash)[0]['filepath']
         filepath = os.path.join(self.gallerypath, filepath_rel)
         
@@ -434,12 +448,9 @@ class GalleryManager():
         sha1hash = self.ehfetcher.getHashOfFileInGallery(filepath)
         if sha1hash is not None:
             logger.debug('Searching by filehash...')
-            result = self.ehfetcher.searchEHByFileHash(sha1hash)
+            result, err = self.ehfetcher.searchEHByFileHash(sha1hash)
+        else:
+            err = 31
         
-        if len(result) == 0:
-            logger.debug('Search by hash failed. Searching by name...')
-            filename = os.path.splitext(os.path.basename(filepath_rel))[0]
-            result = self.ehfetcher.searchEHByName(filename)
-        
-        return result
+        return result, err
         

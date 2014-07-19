@@ -5,6 +5,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 import sys
+import time
 
 from PyQt4 import QtCore, QtGui
 from PyQt4.QtCore import *
@@ -70,23 +71,63 @@ class UpdateSearchDialog(QDialog):
     
     def updateFiles(self):
         self.addInfo('Updating files with info from EH...')
+        self.btn_exit.setEnabled(False)
+        QtCore.QCoreApplication.processEvents()
         QtCore.QCoreApplication.processEvents()
         
         for f in self.filelist:
-            gallerylist = self.manager.findFileOnEH(f['hash'])
-            if len(gallerylist) == 0:
+            # get information from EH at slower speed == trying to not get ban
+            time.sleep(4)
+            
+            err = 1
+            while err==1:
+                gallerylist, err = self.manager.findFileOnEH(f['hash'])
+                if err==1:
+                    self.addInfo('EH connection overloaded, waiting 60s...')
+                    QtCore.QCoreApplication.processEvents()
+                    time.sleep(60)
+
+            if err==0 and len(gallerylist) == 0:
                 self.addInfo('No info found for: '+f['filepath'])
                 QtCore.QCoreApplication.processEvents()
                 continue
-            app = EHUpdateDialog(f, gallerylist, parent=self)
-            app.exec_()
-            returned = app.getClicked()
-            if returned is not None:
-                eh_gallery = returned[3]
-                self.manager.updateFileInfoEHentai(f['hash'], str(eh_gallery))
+                
+            if err==0:
+                app = EHUpdateDialog(f, gallerylist, parent=self)
+                app.exec_()
+                returned = app.getClicked()
+                if returned is not None:
+                    eh_gallery = returned[3]
+                    
+                    err = 1
+                    while err==1:
+                        err = self.manager.updateFileInfoEHentai(f['hash'], str(eh_gallery))
+                        if err==1:
+                            self.addInfo('EH connection overloaded, waiting 60s...')
+                            QtCore.QCoreApplication.processEvents()
+                            time.sleep(60)
+                
+            if err==2:
+                self.addInfo('Banned on EH. Terminating process...')
+                QtCore.QCoreApplication.processEvents()
+                break
+            elif err==3:
+                self.addInfo('Undefined error on EH. Terminating process...')
+                QtCore.QCoreApplication.processEvents()
+                break
+            elif err==20:
+                self.addInfo('HTML failed, using API (cant get namespaces)')
+                QtCore.QCoreApplication.processEvents()
+            elif err==21:
+                self.addInfo('API error')
+                QtCore.QCoreApplication.processEvents()
+            elif err!=0:
+                self.addInfo('Returned error code: '+str(err))
+                QtCore.QCoreApplication.processEvents()
                 
         self.addInfo('Finished!!!')
         
+        self.btn_exit.setEnabled(True)
         self.btn_update.setEnabled(False)
 
 
