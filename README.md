@@ -1,4 +1,4 @@
-EH file manager
+EH File Manager
 ======
 The goal of this little project it to create a file managment system that could be fully used as off-line version of e-hentai.org gallery system.
 
