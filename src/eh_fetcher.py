@@ -31,9 +31,55 @@ from bs4 import BeautifulSoup
 import decompressor
 
 class EHFetcher():
-    def __init__(self, manager):
+    def __init__(self, manager, username=None, password=None):
         self.manager = manager
         self.temppath = self.manager.temppath
+        self.cookies = {}
+        
+        if username is not None and password is not None:
+             c = self.loginToEH(username, password)
+             self.setCookies(c)
+        
+    def loginToEH(self, username, password):
+        """
+        Atempts to login to EH and EXH
+        Returns:
+            cookies
+        """
+        payload = {}
+        hidden = {'CookieDate': '1', 'b': 'd', 'bt':'1-1'}
+        login = {'UserName': username, 'PassWord': password}
+        payload.update(hidden)
+        payload.update(login)
+        
+        # login to EH
+        eh_cookies = requests.post('https://forums.e-hentai.org/index.php?act=Login&CODE=01', data=payload).cookies.get_dict()
+        # get exhentai cookies
+        exh_cookies = requests.get('http://exhentai.org', cookies=eh_cookies).cookies.get_dict()
+        
+        # merge cookies
+        eh_cookies.update(exh_cookies)
+        logger.debug('Cookies: '+str(eh_cookies))
+        
+        return eh_cookies
+        
+    def getLoggedIn(self, cookies=None):
+        """
+        Checks cookies to find out if user is logged in.
+        """
+        if cookies is None:
+            cookies = self.cookies
+            
+        if 'ipb_member_id' in cookies:
+            return True
+        else:
+            return False
+        
+    def getCookies(self):
+        return self.cookies
+    
+    def setCookies(self, cookies):
+        self.cookies = cookies
         
     def getEHError(self, html):
         """
@@ -118,12 +164,17 @@ class EHFetcher():
         
         return sha1hash
     
-    # TODO - exhentai search
     def searchEHByFileHash(self, img_file_sh1_hash):
         """
         Returns list of galleries on EH that have file with given sha1 hash
         """
-        r = requests.get('http://g.e-hentai.org/?f_shash='+img_file_sh1_hash)
+        # get info from exhentai.org if logged in
+        if self.getLoggedIn():
+            site = 'exhentai'
+        else:
+            site = 'g.e-hentai'
+        
+        r = requests.get('http://'+site+'.org/?f_shash='+img_file_sh1_hash, cookies=self.cookies)
         html = unicode(r.text).encode("utf8")
         
         return self.getListOfEHGalleriesFromHTML(html)
@@ -189,6 +240,10 @@ class EHFetcher():
         posted - UNIX timestamp of uploading file to EH
         published - UNIX timestamp of adding fileinfo to database (local)
         """
+        # get info from exhentai.org if logged in
+        if self.getLoggedIn():
+            ehlink = ehlink.replace('g.e-hentai', 'exhentai')
+                
         result, err = self.infoFromEHentai_HTML(ehlink)
         
         # if html is not accesable - fallback to API
@@ -221,7 +276,7 @@ class EHFetcher():
         payload = json.dumps({'method': 'gdata', 'gidlist': [[gallery_id, gallery_token]]})
         headers = {'content-type': 'application/json'}
         
-        r = requests.post("http://g.e-hentai.org/api.php", data=payload, headers=headers)
+        r = requests.post("http://g.e-hentai.org/api.php", data=payload, headers=headers, cookies=self.cookies)
         try:
             gallery_info = r.json()['gmetadata'][0]
         except:
@@ -242,7 +297,7 @@ class EHFetcher():
                 getEHError codes
                 11 - no gallery info accesable (gallery on exhentai)
         """
-        r = requests.get(ehlink)
+        r = requests.get(ehlink, cookies=self.cookies)
         html = unicode(r.text).encode("utf8")
         
         # Test for html error

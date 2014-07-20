@@ -364,6 +364,18 @@ class GalleryManager():
         if os.path.isdir(self.temppath):
             shutil.rmtree(self.temppath)
         os.mkdir(self.temppath)
+        
+    def loginToEH(self, username, password):
+        """
+        Returns if login was sucessfull
+        """
+        cookies = self.ehfetcher.loginToEH(username, password)
+        if self.ehfetcher.getLoggedIn(cookies):
+            self.ehfetcher.setCookies(cookies)
+            return True
+        else:
+            self.ehfetcher.setCookies({})
+            return False
     
     def getThumb(self, filepath, filehash):
         """
