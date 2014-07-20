@@ -124,6 +124,24 @@ class ManagerWindow(QMainWindow):
         editMenu.addAction(updateFileAction_Link)
         editMenu.addAction(updateFileAction_EH)
         
+        ## EH login
+        getLoginAction = QtGui.QAction('Check state', self)
+        getLoginAction.setStatusTip('Check if you are logged to e-hentai.org')
+        getLoginAction.triggered.connect(self.getLogin)
+        
+        loginAction = QtGui.QAction('Login to EH', self)
+        loginAction.setStatusTip('Login to e-hentai.org')
+        loginAction.triggered.connect(self.loginToEH)
+        
+        logoutAction = QtGui.QAction('Logout from EH', self)
+        logoutAction.setStatusTip('Logout from e-hentai.org')
+        logoutAction.triggered.connect(self.logoutFromEH)
+        
+        ehMenu = menubar.addMenu('EH')
+        ehMenu.addAction(getLoginAction)
+        ehMenu.addAction(loginAction)
+        ehMenu.addAction(logoutAction)
+        
         ## Help menu
         #helpMenu = menubar.addMenu('Help')
         
@@ -238,6 +256,27 @@ class ManagerWindow(QMainWindow):
         """
         self.manager.close()
         QtCore.QCoreApplication.instance().quit()
+        
+    def loginToEH(self):
+        app = LoginDialog(parent=self)
+        app.exec_()
+        username, password = app.getLoginDetails()
+        
+        state = self.manager.loginToEH(username,password)
+        if state:
+            QMessageBox.information(self, 'Message', 'Logged in EH.')
+        else:
+            QMessageBox.warning(self, 'Error', 'Login failed')
+        
+    def logoutFromEH(self):
+        self.manager.loginToEH('','')
+        QMessageBox.information(self, 'Message', 'Logged out from EH.')
+        
+    def getLogin(self):
+        if self.manager.getLogin():
+            QMessageBox.information(self, 'Message', 'Logged in')
+        else:
+            QMessageBox.information(self, 'Message', 'Not logged in')
         
     def showError(self, err):
         """
@@ -612,4 +651,35 @@ class ShowDetails(QDialog):
         self.setLayout(layout_main)
         self.show()
         
-
+class LoginDialog(QDialog):
+    def __init__(self, parent=None):
+        QtGui.QDialog.__init__(self, parent)
+        self.initUI()
+    
+    def initUI(self):
+        layout_main = QVBoxLayout()
+        layout_main.setSpacing(5)
+        
+        self.setWindowTitle('Login')
+        
+        ## add edits + button
+        self.line_username = QLineEdit()
+        self.line_password = QLineEdit()
+        self.btn_login = QPushButton('Login')
+        self.btn_login.pressed.connect(self.accept)
+        
+        layout_main.addWidget(QLabel('Username:'))
+        layout_main.addWidget(self.line_username)
+        layout_main.addWidget(QLabel('Password:'))
+        layout_main.addWidget(self.line_password) 
+        layout_main.addWidget(self.btn_login) 
+        
+        ## add stretch
+        layout_main.addStretch()
+        
+        ## Setup layout
+        self.setLayout(layout_main)
+        self.show()
+        
+    def getLoginDetails(self):
+        return unicode(self.line_username.text()), unicode(self.line_password.text())

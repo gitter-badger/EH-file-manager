@@ -376,6 +376,12 @@ class GalleryManager():
         else:
             self.ehfetcher.setCookies({})
             return False
+            
+    def getLogin(self):
+        """
+        Returns True if logged in
+        """
+        return self.ehfetcher.getLoggedIn()
     
     def getThumb(self, filepath, filehash):
         """
