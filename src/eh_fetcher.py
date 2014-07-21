@@ -23,7 +23,8 @@ logger = logging.getLogger(__name__)
 import os
 import hashlib
 import time
-import datetime
+import dateutil.parser as dateparser
+#import datetime
 
 import requests
 import json
@@ -324,7 +325,8 @@ class EHFetcher():
         fileinfo['language'] = left_text[left_text.find('Language:')+9:].strip()
         
         published_datetime = left_text[left_text.find('Posted:')+7:left_text.find('Images')].strip()
-        published_unix = int(datetime.datetime.strptime(published_datetime, '%Y-%m-%d %H:%M').strftime("%s"))
+        dt = dateparser.parse(published_datetime)
+        published_unix = int(time.mktime(dt.timetuple()))
         fileinfo['published'] = published_unix 
         
         div_gd7 = soup.body.find('div', attrs={'id':'gd7'})

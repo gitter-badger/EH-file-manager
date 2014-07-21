@@ -9,7 +9,7 @@ Get zipped source and extract it anywhere you want:
 
 Required dependencies:
 
-    sudo apt-get install python python-pip python-sqlite python-qt4 python-imaging python-yaml
+    sudo apt-get install python python-pip python-sqlite python-qt4 python-imaging python-yaml python-dateutil
     sudo pip install requests beautifulsoup4 pylzma rarfile
     
 (Optional) Install mcomix:
@@ -32,7 +32,7 @@ Install python, pip, PyQt4 and pylzma:
     
 Run from command line to install rest of dependencies:
     
-    C:\Python27\Scripts\pip.exe install requests beautifulsoup4 rarfile pillow pyyaml
+    C:\Python27\Scripts\pip.exe install requests beautifulsoup4 rarfile pillow pyyaml python-dateutil
 
 (Optional) Install [mcomix](http://sourceforge.net/projects/mcomix/files/)
 

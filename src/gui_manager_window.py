@@ -386,7 +386,7 @@ class ManagerWindow(QMainWindow):
             # get path to executable of external archive reader
             reader = self.manager.getSettings()['reader']
             
-            systemCommand = reader+' "'+filepath.encode('utf-8')+'"'
+            systemCommand = '"'+reader+'" "'+filepath.encode('utf-8')+'"'
             logger.debug('Running: '+systemCommand)
             thread.start_new_thread(os.system, (systemCommand,))
         
