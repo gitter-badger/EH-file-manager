@@ -3,13 +3,13 @@ Install
 
 Linux (Debian/Ubuntu/Mint)
 -------
-Get zipped source from and extract it anywhere you want:
+Get zipped source and extract it anywhere you want:
 
     https://github.com/kunesj/EH-file-manager
 
 Required dependencies:
 
-    sudo apt-get install python python-pip python-sqlite python-qt4 python-imaging
+    sudo apt-get install python python-pip python-sqlite python-qt4 python-imaging python-yaml
     sudo pip install requests beautifulsoup4 pylzma rarfile
     
 (Optional) Install mcomix:
@@ -18,7 +18,7 @@ Required dependencies:
 
 Windows (doesnt work right now - encoding)
 -------
-Get zipped source from and extract it anywhere you want:
+Get zipped source and extract it anywhere you want:
 
     https://github.com/kunesj/EH-file-manager
     
