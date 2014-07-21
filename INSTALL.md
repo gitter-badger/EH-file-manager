@@ -16,7 +16,7 @@ Required dependencies:
     
     sudo apt-get install mcomix
 
-Windows (doesnt work right now - encoding)
+Windows (doesnt work right now)
 -------
 Get zipped source and extract it anywhere you want:
 
