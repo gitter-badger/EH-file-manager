@@ -27,7 +27,7 @@ from operator import itemgetter
 import shutil
 import time
 
-import Image
+from PIL import Image
 
 from database_model import DatabaseModel
 from settings import Settings

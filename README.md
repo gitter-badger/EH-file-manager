@@ -9,14 +9,16 @@ Preview (v0.3):
 
 Install
 -------
-To get current development:
+
+See [install notes](https://raw.github.com/kunesj/EH-file-manager/master/INSTALL.md) for Linux and Windows
+
+To get current development run:
 
     git clone https://github.com/kunesj/EH-file-manager.git
+    
+or just download zipped source from:
 
-Required dependencies on Linux Ubuntu/Mint 14.04 LTS:
-
-    sudo apt-get install python python-pip python-sqlite python-qt4 mcomix
-    sudo pip install requests beautifulsoup4 pylzma rarfile
+    https://github.com/kunesj/EH-file-manager
     
 License
 -------
