@@ -132,61 +132,117 @@ class FindNewDialog(QDialog):
         QtCore.QCoreApplication.processEvents()
         QtCore.QCoreApplication.processEvents()
         
-        for f in self.filelist:
+        
+        self.addInfo('Requesting lists of galleries...')
+        QtCore.QCoreApplication.processEvents()
+        files_galleries = []
+        for i in range(len(self.filelist)):
+            self.addInfo('Processing '+str(i+1)+'/'+str(len(self.filelist)))
+            QtCore.QCoreApplication.processEvents()
+            
             # get information from EH at slower speed == trying to not get ban
             time.sleep(4)
             
+            fileinfo = self.filelist[i]
+            if type(fileinfo) == type([]):
+                fileinfo = self.manager.getFileByHash(fileinfo[1])[0]
+                
             err = 1
             while err==1:
-                gallerylist, err = self.manager.findFileOnEH(f[1])
+                gallerylist, err = self.manager.findFileOnEH(fileinfo['hash'])
                 if err==1:
                     self.addInfo('EH connection overloaded, waiting 60s...')
                     QtCore.QCoreApplication.processEvents()
                     time.sleep(60)
-
-            fileinfo = self.manager.getFileByHash(f[1])[0]
-            if err==0 and len(gallerylist) == 0:
+                    
+            if err%10==0 and len(gallerylist) == 0:
                 self.addInfo('No info found for: '+fileinfo['filepath'])
                 QtCore.QCoreApplication.processEvents()
                 continue
-                
-            if err==0:
-                app = EHUpdateDialog(fileinfo, gallerylist, parent=self)
-                app.exec_()
-                returned = app.getClicked()
-                if returned is not None:
-                    eh_gallery = returned[3]
+            elif err%10==0:
+                files_galleries.append([fileinfo, gallerylist])
+            
+            if self.printError(err):
+                return
+            
+        self.addInfo('Selecting galleries to update info from...')
+        QtCore.QCoreApplication.processEvents()
+        files_galleries_filtered = []
+        for i in range(len(files_galleries)):
+            fileinfo = files_galleries[i][0]
+            gallerylist = files_galleries[i][1]
+            
+            self.addInfo('Processing '+str(i+1)+'/'+str(len(files_galleries)))
+            QtCore.QCoreApplication.processEvents()
+            
+            app = EHUpdateDialog(fileinfo, gallerylist, parent=self)
+            app.exec_()
+            returned = app.getClicked()
+            if returned is not None:
+                files_galleries_filtered.append([fileinfo, returned[3]])
+        
+        self.addInfo('Updating selected galleries from EH...')
+        QtCore.QCoreApplication.processEvents()
+        for i in range(len(files_galleries_filtered)):
+            self.addInfo('Processing '+str(i+1)+'/'+str(len(files_galleries_filtered)))
+            QtCore.QCoreApplication.processEvents()
+            
+            # get information from EH at slower speed == trying to not get ban
+            time.sleep(4)
+            
+            fileinfo = files_galleries_filtered[i][0]
+            url = files_galleries_filtered[i][1]
+            
+            err = 1
+            while err==1:
+                err = self.manager.updateFileInfoEHentai(fileinfo['hash'], str(url))
+                if err==1:
+                    self.addInfo('EH connection overloaded, waiting 60s...')
+                    QtCore.QCoreApplication.processEvents()
+                    time.sleep(60)
                     
-                    err = 1
-                    while err==1:
-                        err = self.manager.updateFileInfoEHentai(f[1], str(eh_gallery))
-                        if err==1:
-                            self.addInfo('EH connection overloaded, waiting 60s...')
-                            QtCore.QCoreApplication.processEvents()
-                            time.sleep(60)
-
-            if err==2:
-                self.addInfo('Banned on EH. Terminating process...')
-                QtCore.QCoreApplication.processEvents()
-                break
-            elif err==3:
-                self.addInfo('Undefined error on EH. Terminating process...')
-                QtCore.QCoreApplication.processEvents()
-                break
-            elif err==20:
-                self.addInfo('HTML failed, using API (cant get namespaces)')
-                QtCore.QCoreApplication.processEvents()
-            elif err==21:
-                self.addInfo('API error')
-                QtCore.QCoreApplication.processEvents()
-            elif err!=0:
-                self.addInfo('Returned error code: '+str(err))
-                QtCore.QCoreApplication.processEvents()
+            if self.printError(err):
+                return
                 
         self.addInfo('Finished!!!')
         
         self.btn_exit.setEnabled(True)
         self.btn_update.setEnabled(False)
+        
+    def printError(self, err):
+        """
+        returns True if process should terminate
+        """
+        r = False
+        
+        if err==2:
+            self.addInfo('Banned on EH. Terminating process...')
+            r = True
+        elif err==3:
+            self.addInfo('Undefined error on EH. Terminating process...')
+            r = True
+        elif err==20:
+            self.addInfo('HTML failed, using API (cant get namespaces)')
+        elif err==21:
+            self.addInfo('HTML failed, API error')
+        elif err==31:
+            self.addInfo('Image hash couldnt be generated')
+        elif err%10!=0:
+            self.addInfo('Returned error code: '+str(err))
+            
+        QtCore.QCoreApplication.processEvents()
+        return r
+        
+class UpdateSearchDialog(FindNewDialog):
+    def __init__(self, manager, filelist, parent=None):
+        FindNewDialog.__init__(self, manager, parent)
+
+        self.filelist = filelist
+        self.addInfo('Loaded '+str(len(self.filelist))+' files to be updated')
+        
+        self.btn_find.setEnabled(False)
+        self.btn_add.setEnabled(False)
+        self.btn_update.setEnabled(True)
 
 
 # Testing layout

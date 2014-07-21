@@ -444,8 +444,7 @@ class GalleryManager():
     def updateFileInfoEHentai(self, filehash, ehlink):
         """
         Returns:
-            0 if OK
-            EH fetcher error code, if not
+            EH fetcher error code (if %10==0: OK)
         """
         # add schema to link
         if not (ehlink.startswith('http://') or ehlink.startswith('https://')):
@@ -453,7 +452,7 @@ class GalleryManager():
         
         originfo = self.getFileByHash(filehash)[0]
         ehinfo, err = self.ehfetcher.infoFromEHentaiLink(ehlink)
-        if err!=0:
+        if err%10!=0:
             logger.warning('URL update failed')
             return err
             
@@ -466,7 +465,7 @@ class GalleryManager():
         
         self.updateFileInfo(filehash, ehinfo)
         
-        return 0
+        return err
         
     def findFileOnEH(self, filehash):
         """

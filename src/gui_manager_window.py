@@ -32,8 +32,8 @@ from gallery_manager import GalleryManager
 from gui_eh_update_dialog import EHUpdateDialog
 from gui_edit_settings import EditSettings
 from gui_edit_details import EditDetails
-from gui_find_new_dialog import FindNewDialog
-from gui_update_search_dialog import UpdateSearchDialog
+from gui_find_update_files import FindNewDialog
+from gui_find_update_files import UpdateSearchDialog
 
 class ManagerWindow(QMainWindow):
     def __init__(self, gallerypath):
