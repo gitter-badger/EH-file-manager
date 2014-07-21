@@ -10,7 +10,7 @@ Preview (v0.3):
 Install
 -------
 
-See [install notes](https://raw.github.com/kunesj/EH-file-manager/master/INSTALL.md) for Linux and Windows
+See [install notes](https://github.com/kunesj/EH-file-manager/blob/master/README.md) for Linux and Windows
 
 To get current development run:
 
