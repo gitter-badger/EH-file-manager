@@ -143,9 +143,10 @@ class FindNewDialog(QDialog):
             while err==1:
                 gallerylist, err = self.manager.findFileOnEH(fileinfo['hash'])
                 if err==1:
-                    self.addInfo('EH connection overloaded, waiting 60s...')
+                    wait = self.manager.getSettings()['eh_overload_delay']
+                    self.addInfo('EH connection overloaded, waiting '+str(wait)+'s...')
                     QtCore.QCoreApplication.processEvents()
-                    time.sleep(self.manager.getSettings()['eh_overload_delay'])
+                    time.sleep(wait)
                     
             if err%10==0 and len(gallerylist) == 0:
                 self.addInfo('No info found for: '+fileinfo['filepath'])
@@ -189,9 +190,10 @@ class FindNewDialog(QDialog):
             while err==1:
                 err = self.manager.updateFileInfoEHentai(fileinfo['hash'], str(url))
                 if err==1:
-                    self.addInfo('EH connection overloaded, waiting 60s...')
+                    wait = self.manager.getSettings()['eh_overload_delay']
+                    self.addInfo('EH connection overloaded, waiting '+wait+'s...')
                     QtCore.QCoreApplication.processEvents()
-                    time.sleep(60)
+                    time.sleep(wait)
                     
             if self.printError(err):
                 return

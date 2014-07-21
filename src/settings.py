@@ -84,7 +84,7 @@ class Settings():
         default = {
                     'reader': 'mcomix',
                     'allowed_extensions': ['zip', '7z', 'rar'],
-                    'eh_delay': 3,
+                    'eh_delay': 2,
                     'eh_overload_delay': 60,
                     'categories': ['doujinshi', 'manga', 'artist cg sets', 'game cg sets', 'western', 'non-h', 'image sets',                'cosplay', 'asian porn', 'misc'],
                     'categories_enabled': [],

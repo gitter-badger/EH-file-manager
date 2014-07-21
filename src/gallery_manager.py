@@ -306,18 +306,21 @@ class GalleryManager():
                             eq = True
                             
                         for tag_c in f['tags']:
-                            if s in f['tags'][tag_c]:
-                                eq = True
+                            for t in f['tags'][tag_c]:
+                                if s in t:
+                                    eq = True
                         
                         if eq == False:
                             break
                     else:
                         #has tag category              
                         if s[0] in f['tags']:
-                            if s[1] in f['tags'][s[0]]:
-                                eq = True
+                            for t in f['tags'][s[0]]:
+                                if s[1] in t:
+                                    eq = True
+                                    
                         elif s[0] == 'hash':
-                            if s[1] in f['hash'].lower():
+                            if s[1] == f['hash'].lower():
                                 eq = True
                         
                         if eq == False:

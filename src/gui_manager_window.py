@@ -721,6 +721,7 @@ class LoginDialog(QDialog):
         ## add edits + button
         self.line_username = QLineEdit()
         self.line_password = QLineEdit()
+        self.line_password.setEchoMode(QLineEdit.Password)
         self.btn_login = QPushButton('Login')
         self.btn_login.pressed.connect(self.accept)
         

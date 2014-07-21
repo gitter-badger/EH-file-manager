@@ -209,7 +209,7 @@ class EHFetcher():
             tds = r.findAll('td')
             
             if len(tds)!=4:
-                logger.warning('Bad TR: '+str(tds.text))
+                logger.warning('Bad TR: '+str(r.text))
                 continue
             
             # skip adds
@@ -330,7 +330,10 @@ class EHFetcher():
         fileinfo['published'] = published_unix 
         
         div_gd7 = soup.body.find('div', attrs={'id':'gd7'})
-        fileinfo['description'] = div_gd7.find('div', attrs={'id':'gd71'}).text
+        if div_gd7 is None:
+            fileinfo['description'] = ''
+        else:
+            fileinfo['description'] = div_gd7.find('div', attrs={'id':'gd71'}).text
 
         div_gd4 = soup.body.find('div', attrs={'id':'gd4'})
         div_taglist = div_gd4.find('div', attrs={'id':'taglist'}).find_all('tr')
