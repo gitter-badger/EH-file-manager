@@ -142,7 +142,11 @@ class EHFetcher():
         file_to_use = filtered_filelist[int(len(filtered_filelist)/2)]
         
         # extract page
-        archive.extract(file_to_use, self.temppath)
+        try:
+            archive.extract(file_to_use, self.temppath)
+        except:
+            logger.warning('Error uncompressing File: %s', filepath)
+            return None
         archive.close()
             
         # get correct unix path to extracted file

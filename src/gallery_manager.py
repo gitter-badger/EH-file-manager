@@ -424,7 +424,11 @@ class GalleryManager():
         file_to_use = filtered_filelist[0]
         
         # extract first page
-        archive.extract(file_to_use, self.temppath)
+        try:
+            archive.extract(file_to_use, self.temppath)
+        except:
+            logger.warning('Error uncompressing File: %s', filepath)
+            return None
         archive.close()
             
         # get correct unix path to extracted file
