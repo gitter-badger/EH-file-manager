@@ -23,6 +23,7 @@ logger = logging.getLogger(__name__)
 import os
 import hashlib
 import time
+import datetime
 
 import requests
 import json
@@ -320,7 +321,14 @@ class EHFetcher():
         fileinfo['category'] = div_gd3.find('img').get('alt')
 
         left_text = div_gd3.find('div', attrs={'id':'gdd'}).text
-        fileinfo['language'] = left_text[left_text.find('Language:')+9:]
+        fileinfo['language'] = left_text[left_text.find('Language:')+9:].strip()
+        
+        published_datetime = left_text[left_text.find('Posted:')+7:left_text.find('Images')].strip()
+        published_unix = int(datetime.datetime.strptime(published_datetime, '%Y-%m-%d %H:%M').strftime("%s"))
+        fileinfo['published'] = published_unix 
+        
+        div_gd7 = soup.body.find('div', attrs={'id':'gd7'})
+        fileinfo['description'] = div_gd7.find('div', attrs={'id':'gd71'}).text
 
         div_gd4 = soup.body.find('div', attrs={'id':'gd4'})
         div_taglist = div_gd4.find('div', attrs={'id':'taglist'}).find_all('tr')
