@@ -46,6 +46,8 @@ class EditSettings(QDialog):
         ## Fileinfo form - basic
         self.line_reader = QLineEdit(self.old_settings['reader'])
         self.line_allow_ext = QLineEdit(', '.join(self.old_settings['allowed_extensions']))
+        self.line_delay = QLineEdit(str(self.old_settings['eh_delay']))
+        self.line_overload_delay = QLineEdit(str(self.old_settings['eh_overload_delay']))
         self.line_categories = QLineEdit(', '.join(self.old_settings['categories']))
         self.line_categories_enabled = QLineEdit(', '.join(self.old_settings['categories_enabled']))
         self.line_namespaces = QLineEdit(', '.join(self.old_settings['namespaces']))
@@ -54,13 +56,17 @@ class EditSettings(QDialog):
         layout_main.addWidget(self.line_reader, rstart + 0, 1)
         layout_main.addWidget(QLabel('<b>Allowed extensions:</b> '), rstart + 1, 0)
         layout_main.addWidget(self.line_allow_ext, rstart + 1, 1)
-        layout_main.addWidget(QLabel('<b>Categories:</b> '), rstart + 2, 0)
-        layout_main.addWidget(self.line_categories, rstart + 2, 1)
-        layout_main.addWidget(QLabel('<b>Categories enabled:</b> '), rstart + 3, 0)
-        layout_main.addWidget(self.line_categories_enabled, rstart + 3, 1)
-        layout_main.addWidget(QLabel('<b>Namespaces:</b> '), rstart + 4, 0)
-        layout_main.addWidget(self.line_namespaces, rstart + 4, 1)
-        rstart+=5
+        layout_main.addWidget(QLabel('<b>EH delay:</b> '), rstart + 2, 0)
+        layout_main.addWidget(self.line_delay, rstart + 2, 1)
+        layout_main.addWidget(QLabel('<b>EH overload delay:</b> '), rstart + 3, 0)
+        layout_main.addWidget(self.line_overload_delay, rstart + 3, 1)
+        layout_main.addWidget(QLabel('<b>Categories:</b> '), rstart + 4, 0)
+        layout_main.addWidget(self.line_categories, rstart + 4, 1)
+        layout_main.addWidget(QLabel('<b>Categories enabled:</b> '), rstart + 5, 0)
+        layout_main.addWidget(self.line_categories_enabled, rstart + 5, 1)
+        layout_main.addWidget(QLabel('<b>Namespaces:</b> '), rstart + 6, 0)
+        layout_main.addWidget(self.line_namespaces, rstart + 6, 1)
+        rstart+=7
         
         ## Buttons
         hr = QFrame()
@@ -91,6 +97,16 @@ class EditSettings(QDialog):
         self.new_settings['reader'] = unicode(self.line_reader.text()).encode('utf-8')
         
         self.new_settings['allowed_extensions'] = [x.strip() for x in unicode(self.line_allow_ext.text()).encode('utf-8').lower().split(',')]
+        
+        try:
+            self.new_settings['eh_delay'] = int(self.line_delay.text())
+        except:
+            self.new_settings['eh_delay'] = self.manager.getDefaultSettings()['eh_delay']
+            
+        try:
+            self.new_settings['eh_overload_delay'] = int(self.line_overload_delay.text())
+        except:
+            self.new_settings['eh_overload_delay'] = self.manager.getDefaultSettings()['eh_overload_delay']
         
         self.new_settings['categories'] = [x.strip() for x in unicode(self.line_categories.text()).encode('utf-8').lower().split(',')]
         self.new_settings['categories_enabled'] = [x.strip() for x in unicode(self.line_categories_enabled.text()).encode('utf-8').lower().split(',')]

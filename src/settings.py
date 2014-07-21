@@ -61,7 +61,6 @@ class Settings():
             yaml.dump(self.settings, f)
             f.close
         
-    # @TODO - check for all needed parameters
     def hasSettings(self, path = None):
         """
         Returns:
@@ -85,6 +84,8 @@ class Settings():
         default = {
                     'reader': 'mcomix',
                     'allowed_extensions': ['zip', '7z', 'rar'],
+                    'eh_delay': 3,
+                    'eh_overload_delay': 60,
                     'categories': ['doujinshi', 'manga', 'artist cg sets', 'game cg sets', 'western', 'non-h', 'image sets',                'cosplay', 'asian porn', 'misc'],
                     'categories_enabled': [],
                     'namespaces': ['language', 'parody', 'character', 'group', 'artist', 'male', 'female', 'misc']

@@ -114,6 +114,11 @@ class EHUpdateDialog(QDialog):
             layout_radio.addWidget(label_nothingfound, rstart, 0, 1, 5)
             rstart+=1
             
+        if len(self.radio)==1:
+            self.radio[0].setChecked(True)
+        else:
+            self.radio[1].setChecked(True)
+            
         hr3 = QFrame()
         hr3.setFrameShape(QFrame.HLine)
         layout_radio.addWidget(hr3, rstart + 0, 0, 1, 5)

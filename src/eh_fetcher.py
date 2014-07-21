@@ -208,7 +208,7 @@ class EHFetcher():
         for r in result_html_list:
             tds = r.findAll('td')
             
-            if len(tds)<3:
+            if len(tds)!=4:
                 logger.warning('Bad TR: '+str(tds.text))
                 continue
             
@@ -251,7 +251,7 @@ class EHFetcher():
         # if html is not accesable - fallback to API
         if err==11:
             # less ban
-            time.sleep(4)
+            time.sleep(self.manager.getSettings()['eh_delay'])
             
             index = ehlink.find('hentai.org/g/')
             splited = ehlink[(index+13):].split('/')

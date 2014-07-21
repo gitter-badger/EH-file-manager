@@ -127,6 +127,9 @@ class GalleryManager():
     def getSettings(self):
         return self.settings.getSettings()
         
+    def getDefaultSettings(self):
+        return self.settings.getDefaultSettings()
+        
     def saveSettings(self, newSettings):
         self.settings.setSettings(newSettings)
         self.settings.saveSettings()
