@@ -141,7 +141,7 @@ class ManagerWindow(QMainWindow):
         self.ehMenu.addAction(getLoginAction)
         self.ehMenu.addAction(loginAction)
         self.ehMenu.addAction(logoutAction)
-        eh_lo_path = os.path.join(os.path.split(os.path.realpath(__file__))[0], "../res/eh-state-logout.png")
+        eh_lo_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../res/eh-state-logout.png")
         self.ehMenu.setIcon(QIcon(eh_lo_path))
         
         ## Help menu
@@ -267,17 +267,17 @@ class ManagerWindow(QMainWindow):
         state = self.manager.loginToEH(username,password)
         if state:
             QMessageBox.information(self, 'Message', 'Logged in EH.')
-            eh_li_path = os.path.join(os.path.split(os.path.realpath(__file__))[0], "../res/eh-state-login.png")
+            eh_li_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../res/eh-state-login.png")
             self.ehMenu.setIcon(QIcon(eh_li_path))
         else:
             QMessageBox.warning(self, 'Error', 'Login failed')
-            eh_lo_path = os.path.join(os.path.split(os.path.realpath(__file__))[0], "../res/eh-state-logout.png")
+            eh_lo_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../res/eh-state-logout.png")
             self.ehMenu.setIcon(QIcon(eh_lo_path))
         
     def logoutFromEH(self):
         self.manager.loginToEH('','')
         QMessageBox.information(self, 'Message', 'Logged out from EH.')
-        eh_lo_path = os.path.join(os.path.split(os.path.realpath(__file__))[0], "../res/eh-state-logout.png")
+        eh_lo_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../res/eh-state-logout.png")
         self.ehMenu.setIcon(QIcon(eh_lo_path))
         
     def getLogin(self):
@@ -368,14 +368,7 @@ class ManagerWindow(QMainWindow):
         """
         Display info for selected file
         """
-        self.ui_layout_info.removeWidget(self.ui_info)
-        self.ui_info.close()
-        
-        self.ui_info = ShowDetails(self.manager, self.selectedFile)
-        
-        self.ui_layout_info.addWidget(self.ui_info)
-        self.ui_layout_info.update()
-        self.ui_layout.update()
+        self.ui_info.changeDetails(self.selectedFile)
         
     def openFileInReader(self):
         """
@@ -539,28 +532,20 @@ class ShowDetails(QDialog):
         self.manager = manager
         self.filehash = filehash
         
-        if self.filehash is None or str(self.filehash)=='':
-            logger.debug('No file selected, nothing to display.')
-            self.fileinfo = None
-            self.initUI_E()
-        else:
-            logger.debug('Display info for -> '+self.filehash)
-            self.fileinfo = self.manager.getFileByHash(self.filehash)[0]
-            logger.debug(str(self.fileinfo))
-            self.initUI()
-    
+        # set minimal height (thumb + border)
+        self.setMinimumHeight(self.manager.THUMB_MAXSIZE[1]+15)
+        
+        self.initUI()
+        self.changeDetails(filehash)
+        
     def initUI(self):
         layout_main = QHBoxLayout()
         layout_main.setSpacing(5)
         
         # add thumbnail
-        thumb_path = os.path.join(self.manager.thumbpath, self.fileinfo['hash']+'.png')
-        if not os.path.isfile(thumb_path):
-            thumb_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../res/nothumb.png')
-
+        thumb_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../res/nothumb.png')
         self.ui_thumb = QLabel()
         myPixmap = QtGui.QPixmap(thumb_path)
-        #myScaledPixmap = myPixmap.scaled(self.ui_thumb.size(), Qt.KeepAspectRatio)
         self.ui_thumb.setPixmap(myPixmap)
         
         layout_main.addWidget(self.ui_thumb)
@@ -569,24 +554,22 @@ class ShowDetails(QDialog):
         layout_info = QVBoxLayout()
         layout_info.setSpacing(2)
         
-        if self.fileinfo['title']!='':
-            self.ui_title = QLabel('<b>Title:</b>  '+self.fileinfo['title'])
-            self.ui_title.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
-            self.ui_title.setWordWrap(True)
-            layout_info.addWidget(self.ui_title)
+        self.ui_title = QLabel()
+        self.ui_title.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
+        self.ui_title.setWordWrap(True)
+        layout_info.addWidget(self.ui_title)
             
-        if self.fileinfo['title_jpn']!='':
-            self.ui_title_jpn = QLabel('<b>Title [Jpn]:</b>  '+self.fileinfo['title_jpn'])
-            self.ui_title_jpn.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
-            self.ui_title_jpn.setWordWrap(True)
-            layout_info.addWidget(self.ui_title_jpn)
-            
-        self.ui_category = QLabel('<b>Category:</b>  '+self.fileinfo['category'])
+        self.ui_title_jpn = QLabel()
+        self.ui_title_jpn.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
+        self.ui_title_jpn.setWordWrap(True)
+        layout_info.addWidget(self.ui_title_jpn)
+        
+        self.ui_category = QLabel()
         self.ui_category.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
         self.ui_category.setWordWrap(True)
         layout_info.addWidget(self.ui_category)
         
-        self.ui_description = QLabel('<b>Description:</b>  '+self.fileinfo['description'])
+        self.ui_description = QLabel()
         self.ui_description.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
         self.ui_description.setWordWrap(True)
         layout_info.addWidget(self.ui_description)
@@ -596,52 +579,30 @@ class ShowDetails(QDialog):
         hr1.setFrameShape(QFrame.HLine)
         layout_info.addWidget(hr1)
         
-        # get list of main namespaces from config
-        namespaces = self.manager.getSettings()['namespaces']
+        self.layout_tags = QVBoxLayout()
+        self.layout_tags.setSpacing(2)
         
-        # standard tag namespaces
-        for tc in namespaces:
-            if tc in self.fileinfo['tags']:
-                tags = QLabel('<b>'+tc+':</b> '+', '.join(self.fileinfo['tags'][tc]))
-                tags.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
-                tags.setWordWrap(True)
-                layout_info.addWidget(tags)
+        layout_info.addLayout(self.layout_tags)
         
-        # other non-standard tag namespaces
-        for tc in self.fileinfo['tags']:
-            if not (tc in namespaces):
-                tags = QLabel('<b>'+tc+':</b> '+', '.join(self.fileinfo['tags'][tc]))
-                tags.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
-                tags.setWordWrap(True)
-                layout_info.addWidget(tags)
-        
-        # no tags
-        if len(self.fileinfo['tags']) == 0:
-            notags = QLabel('No tags')    
-            notags.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
-            notags.setWordWrap(True)
-            layout_info.addWidget(notags)    
-            
         ## Database info
         hr2 = QFrame()
         hr2.setFrameShape(QFrame.HLine)
         layout_info.addWidget(hr2)
         
         # Filepath
-        self.ui_filepath = QLabel('<b>Filepath:</b>  $GALLERY/'+self.fileinfo['filepath'])
+        self.ui_filepath = QLabel()
         self.ui_filepath.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
         self.ui_filepath.setWordWrap(True)
         layout_info.addWidget(self.ui_filepath)
         
         # published
-        published_date = datetime.datetime.fromtimestamp(self.fileinfo['published']).strftime('%Y-%m-%d %H:%M:%S')
-        self.ui_published = QLabel('<b>Published:</b>  '+published_date)
+        self.ui_published = QLabel()
         self.ui_published.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
         self.ui_published.setWordWrap(True)
         layout_info.addWidget(self.ui_published) 
         
         # new file
-        self.ui_new = QLabel('<b>Newfile:</b>  '+str(self.fileinfo['new']))
+        self.ui_new = QLabel()
         self.ui_new.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
         self.ui_new.setWordWrap(True)
         layout_info.addWidget(self.ui_new) 
@@ -654,10 +615,95 @@ class ShowDetails(QDialog):
         self.setLayout(layout_main)
         self.show()
         
-    def initUI_E(self):
-        layout_main = QVBoxLayout()
-        self.setLayout(layout_main)
-        self.show()
+    def changeDetails(self, filehash):
+        self.filehash = filehash
+        
+        # remove old tags in layout
+        for i in reversed(range(self.layout_tags.count())):
+            widget = self.layout_tags.takeAt(i).widget()
+
+            if widget is not None: 
+                # widget will be None if the item is a layout
+                widget.deleteLater()
+        
+        if self.filehash is None or str(self.filehash)=='':
+            logger.debug('No file selected, nothing to display.')
+            self.fileinfo = None
+            
+            # thumb
+            thumb_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../res/nothumb.png')
+            myPixmap = QtGui.QPixmap(thumb_path)
+            self.ui_thumb.setPixmap(myPixmap)
+            
+            # basic info
+            self.ui_title.setText('<b>Title:</b>')
+            self.ui_title_jpn.setText('<b>Title [Jpn]:</b>')
+            self.ui_category.setText('<b>Category:</b>')
+            self.ui_description.setText('<b>Description:</b>')
+            
+            # tags
+            notags = QLabel('No tags')    
+            notags.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
+            notags.setWordWrap(True)
+            self.layout_tags.addWidget(notags) 
+            
+            ## Database info
+            self.ui_filepath.setText('<b>Filepath:</b>')
+            self.ui_published.setText('<b>Published:</b>')
+            self.ui_new.setText('<b>Newfile:</b>')
+            
+        else:
+            logger.debug('Display info for -> '+self.filehash)
+            self.fileinfo = self.manager.getFileByHash(self.filehash)[0]
+            logger.debug(str(self.fileinfo))
+            
+            # thumb
+            thumb_path = os.path.join(self.manager.thumbpath, self.fileinfo['hash']+'.png')
+            if not os.path.isfile(thumb_path):
+                thumb_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../res/nothumb.png')
+            myPixmap = QtGui.QPixmap(thumb_path)
+            self.ui_thumb.setPixmap(myPixmap)
+            
+            # basic info
+            self.ui_title.setText('<b>Title:</b>  '+self.fileinfo['title']) 
+            self.ui_title_jpn.setText('<b>Title [Jpn]:</b>  '+self.fileinfo['title_jpn'])
+            self.ui_category.setText('<b>Category:</b>  '+self.fileinfo['category'])
+            self.ui_description.setText('<b>Description:</b>  '+self.fileinfo['description'])
+            
+            ## tags
+            # get list of main namespaces from config
+            namespaces = self.manager.getSettings()['namespaces']
+            
+            # standard tag namespaces
+            for tc in namespaces:
+                if tc in self.fileinfo['tags']:
+                    tags = QLabel('<b>'+tc+':</b> '+', '.join(self.fileinfo['tags'][tc]))
+                    tags.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
+                    tags.setWordWrap(True)
+                    self.layout_tags.addWidget(tags)
+            
+            # other non-standard tag namespaces
+            for tc in self.fileinfo['tags']:
+                if not (tc in namespaces):
+                    tags = QLabel('<b>'+tc+':</b> '+', '.join(self.fileinfo['tags'][tc]))
+                    tags.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
+                    tags.setWordWrap(True)
+                    self.layout_tags.addWidget(tags)
+            
+            # no tags
+            if len(self.fileinfo['tags']) == 0:
+                notags = QLabel('No tags')    
+                notags.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
+                notags.setWordWrap(True)
+                self.layout_tags.addWidget(notags)  
+            
+            ## Database info
+            self.ui_filepath.setText('<b>Filepath:</b>  $GALLERY/'+self.fileinfo['filepath'])
+            published_date = datetime.datetime.fromtimestamp(self.fileinfo['published']).strftime('%Y-%m-%d %H:%M:%S')
+            self.ui_published.setText('<b>Published:</b>  '+published_date)
+            self.ui_new.setText('<b>Newfile:</b>  '+str(self.fileinfo['new']))
+
+            
         
 class LoginDialog(QDialog):
     def __init__(self, parent=None):
