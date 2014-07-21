@@ -320,6 +320,15 @@ class EHFetcher():
 
         div_gd3 = soup.body.find('div', attrs={'id':'gd3'})
         fileinfo['category'] = div_gd3.find('img').get('alt')
+        # get correct names
+        if fileinfo['category'] == 'artistcg':
+            fileinfo['category'] = 'artist cg sets'
+        elif fileinfo['category'] == 'imageset':
+            fileinfo['category'] = 'image sets'
+        elif fileinfo['category'] == 'gamecg':
+            fileinfo['category'] = 'game cg sets'
+        elif fileinfo['category'] == 'asianporn':
+            fileinfo['category'] = 'asian porn'
 
         left_text = div_gd3.find('div', attrs={'id':'gdd'}).text
         fileinfo['language'] = left_text[left_text.find('Language:')+9:].strip()

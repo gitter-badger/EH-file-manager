@@ -57,7 +57,7 @@ class ArchiveFile():
         Extracts one file from archive to given path
         """
         if type(path) == type(u''):
-            path = path.encode('utf-8')
+            path = path.encode(sys.getfilesystemencoding())
         
         if self.extension == '7z':
             outfile_name = 'img.'+file_to_ext.split('.')[-1]
