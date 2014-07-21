@@ -137,10 +137,12 @@ class ManagerWindow(QMainWindow):
         logoutAction.setStatusTip('Logout from e-hentai.org')
         logoutAction.triggered.connect(self.logoutFromEH)
         
-        ehMenu = menubar.addMenu('EH')
-        ehMenu.addAction(getLoginAction)
-        ehMenu.addAction(loginAction)
-        ehMenu.addAction(logoutAction)
+        self.ehMenu = menubar.addMenu('EH')
+        self.ehMenu.addAction(getLoginAction)
+        self.ehMenu.addAction(loginAction)
+        self.ehMenu.addAction(logoutAction)
+        eh_lo_path = os.path.join(os.path.split(os.path.realpath(__file__))[0], "../res/eh-state-logout.png")
+        self.ehMenu.setIcon(QIcon(eh_lo_path))
         
         ## Help menu
         #helpMenu = menubar.addMenu('Help')
@@ -265,12 +267,18 @@ class ManagerWindow(QMainWindow):
         state = self.manager.loginToEH(username,password)
         if state:
             QMessageBox.information(self, 'Message', 'Logged in EH.')
+            eh_li_path = os.path.join(os.path.split(os.path.realpath(__file__))[0], "../res/eh-state-login.png")
+            self.ehMenu.setIcon(QIcon(eh_li_path))
         else:
             QMessageBox.warning(self, 'Error', 'Login failed')
+            eh_lo_path = os.path.join(os.path.split(os.path.realpath(__file__))[0], "../res/eh-state-logout.png")
+            self.ehMenu.setIcon(QIcon(eh_lo_path))
         
     def logoutFromEH(self):
         self.manager.loginToEH('','')
         QMessageBox.information(self, 'Message', 'Logged out from EH.')
+        eh_lo_path = os.path.join(os.path.split(os.path.realpath(__file__))[0], "../res/eh-state-logout.png")
+        self.ehMenu.setIcon(QIcon(eh_lo_path))
         
     def getLogin(self):
         if self.manager.getLogin():
