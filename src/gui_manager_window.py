@@ -387,6 +387,8 @@ class ManagerWindow(QMainWindow):
             reader = self.manager.getSettings()['reader']
             
             systemCommand = '"'+reader+'" "'+filepath.encode('utf-8')+'"'
+            if os.name == 'nt':
+                systemCommand = '"'+systemCommand+'"'
             logger.debug('Running: '+systemCommand)
             thread.start_new_thread(os.system, (systemCommand,))
         
