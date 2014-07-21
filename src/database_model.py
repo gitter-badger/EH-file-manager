@@ -23,6 +23,7 @@ logger = logging.getLogger(__name__)
 import os
 import sqlite3
 import time
+import sys
 
 class DatabaseModel():
     FILENAME = 'database.db'
@@ -139,7 +140,10 @@ class DatabaseModel():
         # convert utf-8 to unicode
         for fi in fileinfo:
             if type(fileinfo[fi]) != type(u' ') and isinstance(fileinfo[fi], basestring):
-                fileinfo[fi] = fileinfo[fi].decode('utf-8') 
+                try:
+                    fileinfo[fi] = fileinfo[fi].decode(sys.getfilesystemencoding()) 
+                except:
+                    print str(sys.getfilesystemencoding())+' decode failed'
                 
         logger.debug('SQLite newfile query: '+str(fileinfo))
         
@@ -191,11 +195,13 @@ class DatabaseModel():
         
         # convert utf-8 to unicode
         for ni in newinfo:
-            if type(newinfo[ni]) != type(u' '):
-                if type(newinfo[ni]) == type(' '):
-                    newinfo[ni] = newinfo[ni].decode('utf-8') 
-                else:
-                    newinfo[ni] = unicode(newinfo[ni])
+            if type(newinfo[ni]) != type(u' ') and isinstance(newinfo[ni], basestring):
+                try:
+                    newinfo[ni] = newinfo[ni].decode(sys.getfilesystemencoding()) 
+                except:
+                    print str(sys.getfilesystemencoding())+' decode failed'
+            else:
+                newinfo[ni] = unicode(newinfo[ni])
                 
         logger.debug('SQLite updatefile query: '+str(newinfo))
         

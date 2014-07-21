@@ -152,7 +152,7 @@ class GalleryManager():
         """
         Add fileinfo to database
         """
-        logger.debug('Processing file - '+str(filepath))
+        logger.debug('Processing file - '+filepath)
         if filehash is None:
             filehash = self.getHash(filepath)
         
@@ -160,8 +160,8 @@ class GalleryManager():
         commonprefix = os.path.commonprefix([self.gallerypath, filepath])
         if commonprefix != self.gallerypath:
             logger.error('File is not in child directory of gallery!!!'+ \
-                        '\nfilepath: '+str(filepath)+'\ngallerypath: '+ \
-                        str(self.gallerypath)+'\ncommonprefix: '+str(commonprefix))
+                        '\nfilepath: '+filepath+'\ngallerypath: '+ \
+                        str(self.gallerypath)+'\ncommonprefix: '+commonprefix)
             return False
         
         elif len(self.getFileByHash(filehash))>0:
@@ -171,7 +171,7 @@ class GalleryManager():
         else:
             title = os.path.splitext(os.path.basename(filepath))[0]
             filepath_rel = os.path.relpath(filepath, commonprefix)
-            logger.debug('File relative path -> '+str(filepath_rel))
+            logger.debug('File relative path -> '+filepath_rel)
             
             # add file to database
             self.dbmodel.addFile(filehash=filehash, filepath=filepath_rel, title=title)
@@ -205,7 +205,7 @@ class GalleryManager():
         
         logger.debug('Getting list of files in database...')
         filepathlist = []
-        for root, dirs, files in os.walk(path):
+        for root, dirs, files in os.walk(unicode(path)):
             if os.path.commonprefix([self.configpath, root]) != self.configpath:
                 paths = [os.path.join(root,f) for f in files]
                 filepathlist+=paths
