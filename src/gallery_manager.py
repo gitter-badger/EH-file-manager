@@ -136,20 +136,20 @@ class GalleryManager():
     
     def getHash(self, filepath):
         """
-        Returns MD5 hash of file.
+        Returns hash of file.
         """
         
         afile = open(filepath, 'rb')
         buf = afile.read()
         afile.close()
         
-        hasher = hashlib.md5()
+        hasher = hashlib.sha1()
         hasher.update(buf)
         
-        md5hash = hasher.hexdigest()
-        logger.debug('Generated md5 hash - '+str(md5hash))
+        filehash = hasher.hexdigest()
+        logger.debug('Generated sha1 hash - '+str(filehash))
         
-        return md5hash
+        return filehash
         
     def addFile(self, filepath, filehash = None):
         """
