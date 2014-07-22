@@ -7,13 +7,13 @@ Get zipped source and extract it anywhere you want:
 
     https://github.com/kunesj/EH-file-manager
 
-Required dependencies:
+Run this to install required dependencies:
 
     sudo apt-get install python python-pip python-sqlite python-qt4 python-imaging python-yaml python-dateutil unrar
     sudo pip install requests beautifulsoup4 pylzma rarfile
     
 (Optional) Install mcomix:
-    
+
     sudo apt-get install mcomix
 
 Windows
@@ -22,22 +22,22 @@ Get zipped source and extract it anywhere you want:
 
     https://github.com/kunesj/EH-file-manager
     
-Install python, pip, PyQt4 and pylzma:
+Install Python 2, setupTools, pip, PyQt4 and pylzma:
 
-- [Python 2.7](https://www.python.org/downloads/windows/)
-- [Python 2.7 - setupTools](http://www.lfd.uci.edu/~gohlke/pythonlibs/#setuptools)
-- [Python 2.7 - pip](http://www.lfd.uci.edu/~gohlke/pythonlibs/#pip)
-- [Python 2.7 - PyQt4](http://www.lfd.uci.edu/~gohlke/pythonlibs/#pyqt)
-- [Python 2.7 - pylzma](http://www.lfd.uci.edu/~gohlke/pythonlibs/#pylzma)
-    
-Run from command line to install rest of dependencies:
-    
+- [Python 2.x](https://www.python.org/downloads/windows/)
+- [Python 2.x - setupTools](http://www.lfd.uci.edu/~gohlke/pythonlibs/#setuptools)
+- [Python 2.x - pip](http://www.lfd.uci.edu/~gohlke/pythonlibs/#pip)
+- [Python 2.x - PyQt4](http://www.lfd.uci.edu/~gohlke/pythonlibs/#pyqt)
+- [Python 2.x - pylzma](http://www.lfd.uci.edu/~gohlke/pythonlibs/#pylzma)
+
+Run this to install rest of required dependencies:
+
     C:\Python27\Scripts\pip.exe install requests beautifulsoup4 rarfile pillow pyyaml python-dateutil 
-    
-Download [unrar](http://www.rarlab.com/rar/unrarw32.exe) and install it to:
 
-    C:\Python27\
+Download [unrar](http://www.rarlab.com/rar/unrarw32.exe) and install it to Python directory, result should look like this:
+
+    C:\Python27\unrar.exe
 
 (Optional) Install [mcomix](http://sourceforge.net/projects/mcomix/files/)
 
-- In settings add full path to mcomix executable
+- In EH File Manager settings add full path to mcomix executable
