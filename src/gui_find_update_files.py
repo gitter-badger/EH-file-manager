@@ -91,10 +91,10 @@ class FindNewDialog(QDialog):
         sb.setValue(sb.maximum())
         
         QtCore.QCoreApplication.processEvents()
+        QtCore.QCoreApplication.processEvents()
     
     def findNewFiles(self):
         self.addInfo('Searching for new files... (getting hashes)')
-        QtCore.QCoreApplication.processEvents()
         
         filelist_all = self.manager.getFileList()
         
@@ -111,7 +111,6 @@ class FindNewDialog(QDialog):
     
     def addNewFiles(self):
         self.addInfo('Adding new files to database...')
-        QtCore.QCoreApplication.processEvents()
         
         added = self.manager.addFiles(self.filelist, new=True)
         
@@ -122,15 +121,12 @@ class FindNewDialog(QDialog):
     
     def updateNewFiles(self):
         self.addInfo('Updating new files with info from EH...')
-        QtCore.QCoreApplication.processEvents()
         
         
         self.addInfo('Requesting lists of galleries...')
-        QtCore.QCoreApplication.processEvents()
         files_galleries = []
         for i in range(len(self.filelist)):
             self.addInfo('Processing '+str(i+1)+'/'+str(len(self.filelist)))
-            QtCore.QCoreApplication.processEvents()
             
             # get information from EH at slower speed == trying to not get ban
             time.sleep(self.manager.getSettings()['eh_delay'])
@@ -145,12 +141,10 @@ class FindNewDialog(QDialog):
                 if err==1:
                     wait = self.manager.getSettings()['eh_overload_delay']
                     self.addInfo('EH connection overloaded, waiting '+str(wait)+'s...')
-                    QtCore.QCoreApplication.processEvents()
                     time.sleep(wait)
                     
             if err%10==0 and len(gallerylist) == 0:
                 self.addInfo('No info found for: '+fileinfo['filepath'])
-                QtCore.QCoreApplication.processEvents()
                 continue
             elif err%10==0:
                 files_galleries.append([fileinfo, gallerylist])
@@ -159,14 +153,12 @@ class FindNewDialog(QDialog):
                 return
             
         self.addInfo('Selecting galleries to update info from...')
-        QtCore.QCoreApplication.processEvents()
         files_galleries_filtered = []
         for i in range(len(files_galleries)):
             fileinfo = files_galleries[i][0]
             gallerylist = files_galleries[i][1]
             
             self.addInfo('Processing '+str(i+1)+'/'+str(len(files_galleries)))
-            QtCore.QCoreApplication.processEvents()
             
             app = EHUpdateDialog(fileinfo, gallerylist, parent=self)
             app.exec_()
@@ -175,10 +167,8 @@ class FindNewDialog(QDialog):
                 files_galleries_filtered.append([fileinfo, returned[3]])
         
         self.addInfo('Updating selected galleries from EH...')
-        QtCore.QCoreApplication.processEvents()
         for i in range(len(files_galleries_filtered)):
             self.addInfo('Processing '+str(i+1)+'/'+str(len(files_galleries_filtered)))
-            QtCore.QCoreApplication.processEvents()
             
             # get information from EH at slower speed == trying to not get ban
             time.sleep(self.manager.getSettings()['eh_delay'])
@@ -192,7 +182,6 @@ class FindNewDialog(QDialog):
                 if err==1:
                     wait = self.manager.getSettings()['eh_overload_delay']
                     self.addInfo('EH connection overloaded, waiting '+wait+'s...')
-                    QtCore.QCoreApplication.processEvents()
                     time.sleep(wait)
                     
             if self.printError(err):
@@ -223,7 +212,6 @@ class FindNewDialog(QDialog):
         elif err%10!=0:
             self.addInfo('Returned error code: '+str(err))
             
-        QtCore.QCoreApplication.processEvents()
         return r
         
 class UpdateSearchDialog(FindNewDialog):
