@@ -26,7 +26,7 @@ import re
 from operator import itemgetter
 import shutil
 import time
-
+import yaml
 from PIL import Image
 
 from database_model import DatabaseModel
@@ -41,6 +41,7 @@ class GalleryManager():
     CONFIGDIR = '.config'
     TEMPDIR = '_temp'
     THUMBDIR = 'thumb'
+    COOKIEFILE = 'cookies.yaml'
     THUMB_MAXSIZE = 180, 270
     
     def __init__(self, gallerypath=''):
@@ -388,6 +389,47 @@ class GalleryManager():
         Returns True if logged in
         """
         return self.ehfetcher.getLoggedIn()
+            
+    def saveCookies(self, cookies=None):
+        """
+        Saves cookies to file for future reuse (autologin)
+        """
+        logger.debug('Saving cookies to file...')
+        if cookies is None:
+            cookies = self.ehfetcher.getCookies()
+        try:
+            f = open(os.path.join(self.configpath, self.COOKIEFILE), 'wb')
+            yaml.dump(cookies, f)
+            f.close
+        except Exception, e:
+            logger.error('Saving cookies to file failed!! '+str(e))
+        else:
+            logger.debug('Cookies saved')
+    
+    def loadSavedCookies(self):
+        """
+        Reads cookies from file and if they are correct loads them to eh_fetcher
+        Returns:
+            True - cookies loaded from file and login was sucessfull
+            False - error
+        """
+        logger.debug('Loading cookies from file...')
+        try:
+            f = open(os.path.join(self.configpath, self.COOKIEFILE), 'rb')
+            cookies = yaml.load(f)
+            f.close()
+        except Exception, e:
+            logger.error('Loading cookies from file failed!! '+str(e))
+            return False
+
+        if self.ehfetcher.getLoggedIn(cookies):
+            self.ehfetcher.setCookies(cookies)
+        else:
+            logger.error('Bad saved cookies!!')
+            return False
+        
+        logger.debug('Cookies loaded')
+        return True
     
     def getThumb(self, filepath, filehash):
         """
@@ -406,8 +448,9 @@ class GalleryManager():
         # open archive
         try:
             archive = decompressor.ArchiveFile(filepath)
-        except:
-            logger.warning('Error uncompressing File: %s', filepath)
+        except Exception, e:
+            logger.warning('Error openning File: %s', filepath)
+            logger.debug(str(e))
             return None
         
         # get list of files in archive
@@ -426,8 +469,9 @@ class GalleryManager():
         # extract first page
         try:
             archive.extract(file_to_use, self.temppath)
-        except:
+        except Exception, e:
             logger.warning('Error uncompressing File: %s', filepath)
+            logger.debug(str(e))
             return None
         archive.close()
             

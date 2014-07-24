@@ -57,9 +57,13 @@ class Settings():
             logger.error('No settings to write')
         else:
             logger.debug('Saving settings to file')
-            f = open(self.settingspath, 'wb')
-            yaml.dump(self.settings, f)
-            f.close
+            try:
+                f = open(self.settingspath, 'wb')
+                yaml.dump(self.settings, f)
+                f.close
+            except Exception, e:
+                logger.error('Error when saving settings to file!!')
+                logger.debug(str(e))
         
     def hasSettings(self, path = None):
         """
@@ -74,8 +78,9 @@ class Settings():
             f = open(path, 'rb')
             yaml.load(f)
             f.close()
-        except:
+        except Exception, e:
             logger.warning('Bad settings file/path!!!')
+            logger.debug(str(e))
             return False
         
         return True

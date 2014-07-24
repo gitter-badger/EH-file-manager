@@ -49,6 +49,11 @@ class ManagerWindow(QMainWindow):
         
         self.ui_searchbar.setText('')
         self.search()
+        
+        # autologin to eh
+        if self.manager.loadSavedCookies():
+            eh_li_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../res/eh-state-login.png")
+            self.ehMenu.setIcon(QIcon(eh_li_path))
     
     def initUI(self):
         cw = QWidget()
@@ -262,13 +267,15 @@ class ManagerWindow(QMainWindow):
     def loginToEH(self):
         app = LoginDialog(parent=self)
         app.exec_()
-        username, password = app.getLoginDetails()
+        username, password, save = app.getLoginDetails()
         
         state = self.manager.loginToEH(username,password)
         if state:
             QMessageBox.information(self, 'Message', 'Logged in EH.')
             eh_li_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../res/eh-state-login.png")
             self.ehMenu.setIcon(QIcon(eh_li_path))
+            if save:
+                self.manager.saveCookies()
         else:
             QMessageBox.warning(self, 'Error', 'Login failed')
             eh_lo_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../res/eh-state-logout.png")
@@ -722,14 +729,20 @@ class LoginDialog(QDialog):
         self.line_username = QLineEdit()
         self.line_password = QLineEdit()
         self.line_password.setEchoMode(QLineEdit.Password)
-        self.btn_login = QPushButton('Login')
-        self.btn_login.pressed.connect(self.accept)
         
         layout_main.addWidget(QLabel('Username:'))
         layout_main.addWidget(self.line_username)
         layout_main.addWidget(QLabel('Password:'))
         layout_main.addWidget(self.line_password) 
-        layout_main.addWidget(self.btn_login) 
+        
+        # Fileinfo form - newfile
+        self.box_save = QCheckBox('Save cookies for autologin', self)
+        layout_main.addWidget(self.box_save)
+        
+        # login button
+        self.btn_login = QPushButton('Login')
+        self.btn_login.pressed.connect(self.accept)
+        layout_main.addWidget(self.btn_login)
         
         ## add stretch
         layout_main.addStretch()
@@ -739,4 +752,4 @@ class LoginDialog(QDialog):
         self.show()
         
     def getLoginDetails(self):
-        return unicode(self.line_username.text()), unicode(self.line_password.text())
+        return unicode(self.line_username.text()), unicode(self.line_password.text()), (self.box_save.checkState()==QtCore.Qt.Checked)

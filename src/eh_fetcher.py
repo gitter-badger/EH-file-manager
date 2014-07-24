@@ -124,8 +124,9 @@ class EHFetcher():
         # open archive
         try:
             archive = decompressor.ArchiveFile(filepath)
-        except:
+        except Exception, e:
             logger.warning('Error uncompressing File: %s', filepath)
+            logger.debug(str(e))
             return None
         
         # get list of files in archive
@@ -144,8 +145,9 @@ class EHFetcher():
         # extract page
         try:
             archive.extract(file_to_use, self.temppath)
-        except:
+        except Exception, e:
             logger.warning('Error uncompressing File: %s', filepath)
+            logger.debug(str(e))
             return None
         archive.close()
             
@@ -285,8 +287,9 @@ class EHFetcher():
         r = requests.post("http://g.e-hentai.org/api.php", data=payload, headers=headers, cookies=self.cookies)
         try:
             gallery_info = r.json()['gmetadata'][0]
-        except:
+        except Exception, e:
             logger.error('Error connecting to EH API')
+            logger.debug(str(e))
             gallery_info = []
             err = 21
         else:

@@ -101,11 +101,13 @@ class EditSettings(QDialog):
         try:
             self.new_settings['eh_delay'] = int(self.line_delay.text())
         except:
+            logger.error('Couldnt use settings for eh_delay given by user -> using defaults')
             self.new_settings['eh_delay'] = self.manager.getDefaultSettings()['eh_delay']
             
         try:
             self.new_settings['eh_overload_delay'] = int(self.line_overload_delay.text())
         except:
+            logger.error('Couldnt use settings for eh_overload_delay given by user -> using defaults')
             self.new_settings['eh_overload_delay'] = self.manager.getDefaultSettings()['eh_overload_delay']
         
         self.new_settings['categories'] = [x.strip() for x in unicode(self.line_categories.text()).encode('utf-8').lower().split(',')]

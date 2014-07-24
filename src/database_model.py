@@ -142,8 +142,9 @@ class DatabaseModel():
             if type(fileinfo[fi]) != type(u' ') and isinstance(fileinfo[fi], basestring):
                 try:
                     fileinfo[fi] = fileinfo[fi].decode(sys.getfilesystemencoding()) 
-                except:
-                    print str(sys.getfilesystemencoding())+' decode failed'
+                except Exception, e:
+                    logger.error(str(sys.getfilesystemencoding())+' decode failed')
+                    logger.debug(str(e))
                 
         logger.debug('SQLite newfile query: '+str(fileinfo))
         
@@ -198,8 +199,9 @@ class DatabaseModel():
             if type(newinfo[ni]) != type(u' ') and isinstance(newinfo[ni], basestring):
                 try:
                     newinfo[ni] = newinfo[ni].decode(sys.getfilesystemencoding()) 
-                except:
-                    print str(sys.getfilesystemencoding())+' decode failed'
+                except Exception, e:
+                    logger.error(str(sys.getfilesystemencoding())+' decode failed')
+                    logger.debug(str(e))
             else:
                 newinfo[ni] = unicode(newinfo[ni])
                 
