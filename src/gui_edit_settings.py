@@ -96,7 +96,10 @@ class EditSettings(QDialog):
         
         self.new_settings['reader'] = unicode(self.line_reader.text()).encode('utf-8')
         
-        self.new_settings['allowed_extensions'] = [x.strip() for x in unicode(self.line_allow_ext.text()).encode('utf-8').lower().split(',')]
+        if unicode(self.line_allow_ext.text()).encode('utf-8').lower().strip() == '':
+            self.new_settings['allowed_extensions'] = []
+        else:
+            self.new_settings['allowed_extensions'] = [x.strip() for x in unicode(self.line_allow_ext.text()).encode('utf-8').lower().split(',')]
         
         try:
             self.new_settings['eh_delay'] = int(self.line_delay.text())
@@ -110,10 +113,20 @@ class EditSettings(QDialog):
             logger.error('Couldnt use settings for eh_overload_delay given by user -> using defaults')
             self.new_settings['eh_overload_delay'] = self.manager.getDefaultSettings()['eh_overload_delay']
         
-        self.new_settings['categories'] = [x.strip() for x in unicode(self.line_categories.text()).encode('utf-8').lower().split(',')]
-        self.new_settings['categories_enabled'] = [x.strip() for x in unicode(self.line_categories_enabled.text()).encode('utf-8').lower().split(',')]
+        if unicode(self.line_categories.text()).encode('utf-8').lower().strip() == '':
+            self.new_settings['categories'] = []
+        else:
+            self.new_settings['categories'] = [x.strip() for x in unicode(self.line_categories.text()).encode('utf-8').lower().split(',')]
+            
+        if unicode(self.line_categories_enabled.text()).encode('utf-8').lower().strip() == '':
+            self.new_settings['categories_enabled'] = []
+        else:
+            self.new_settings['categories_enabled'] = [x.strip() for x in unicode(self.line_categories_enabled.text()).encode('utf-8').lower().split(',')]
         
-        self.new_settings['namespaces'] = [x.strip() for x in unicode(self.line_namespaces.text()).encode('utf-8').lower().split(',')]
+        if unicode(self.line_namespaces.text()).encode('utf-8').lower().strip() == '':
+            self.new_settings['namespaces'] = []
+        else:
+            self.new_settings['namespaces'] = [x.strip() for x in unicode(self.line_namespaces.text()).encode('utf-8').lower().split(',')]
         
         self.manager.saveSettings(self.new_settings)
         self.close()
