@@ -185,6 +185,11 @@ class ManagerWindow(QMainWindow):
             
             self.ui_btn_categories.append(c_btn)
             self.layout_cat_search.addWidget(c_btn)
+            
+        self.ui_btn_category_other = QtGui.QPushButton('OTHER', self)
+        self.ui_btn_category_other.setCheckable(True)
+        self.ui_btn_category_other.setChecked(True)
+        self.layout_cat_search.addWidget(self.ui_btn_category_other)
         
         self.layout_cat_search.addStretch()
         self.ui_layout.addLayout(self.layout_cat_search)
@@ -480,10 +485,20 @@ class ManagerWindow(QMainWindow):
         searchstring = str(self.ui_searchbar.text())
         logger.debug('Searching -> '+str(searchstring))
         
+        # other categories button
+        categories_other = self.ui_btn_category_other.isChecked()
+        
+        # main categories buttons
         search_categories = [] 
         for c_btn in self.ui_btn_categories:
             if c_btn.isChecked():
                 search_categories.append(unicode(c_btn.text()))
+                
+        # if no buttons pressed, search all
+        if len(search_categories)==0 and not categories_other:
+            for c_btn in self.ui_btn_categories:
+                search_categories.append(unicode(c_btn.text()))
+            categories_other = True
         
         sort = unicode(self.ui_combobox_sort.itemText(self.ui_combobox_sort.currentIndex())).encode('utf-8')
         
@@ -491,6 +506,7 @@ class ManagerWindow(QMainWindow):
             'new': (self.ui_box_new.checkState()==QtCore.Qt.Checked),
             'del': (self.ui_box_del.checkState()==QtCore.Qt.Checked),
             'categories': search_categories,
+            'categories_other': categories_other,
             'sort': sort,
             'sort_rev': (self.ui_box_sort_rev.checkState()==QtCore.Qt.Checked)
             }

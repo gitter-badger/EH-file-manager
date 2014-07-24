@@ -263,6 +263,7 @@ class GalleryManager():
             'new': bool,
             'del': bool,
             'categories': list(str),
+            'categories_other': bool,
             'sort': str,
             'sort_rev': bool
             }
@@ -272,6 +273,7 @@ class GalleryManager():
                             'new': False,
                             'del': False,
                             'categories': [],
+                            'categories_other': True,
                             'sort': 'published',
                             'sort_rev': False
                             }
@@ -345,15 +347,22 @@ class GalleryManager():
                     filtered_new.append(f)
             filtered = filtered_new 
         
-        if len(search_cfg['categories'])>0:
-            filtered_new = []
+        # category filters
+        filtered_new = []
+        for f in filtered:
+            # append OTHER categories
+            if not (f['category'].lower().strip() in self.getSettings()['categories']) \
+            and not (f['category'].lower().strip() in search_cfg['categories']) \
+            and search_cfg['categories_other']:
+                filtered_new.append(f)
+                continue
+            
+            # append standard categories
             for c in search_cfg['categories']:
-                for f in filtered:
-                    if not (c.lower().strip() in self.getSettings()['categories']):
-                        filtered_new.append(f)
-                    elif f['category'].lower().strip() == c.lower().strip():
-                        filtered_new.append(f)
-            filtered = filtered_new 
+                if f['category'].lower().strip() == c.lower().strip():
+                    filtered_new.append(f)
+            
+        filtered = filtered_new 
             
         # Sort results
         filtered = sorted(filtered, key=itemgetter(search_cfg['sort']), reverse=search_cfg['sort_rev']) 
