@@ -137,7 +137,11 @@ class FindNewDialog(QDialog):
                 
             err = 1
             while err==1:
-                gallerylist, err = self.manager.findFileOnEH(fileinfo['hash'])
+                try:
+                    gallerylist, err = self.manager.findFileOnEH(fileinfo['hash'])
+                except Exception, e:
+                    self.addInfo('Error when loading url: '+str(e))
+                    continue
                 if err==1:
                     wait = self.manager.getSettings()['eh_overload_delay']
                     self.addInfo('EH connection overloaded, waiting '+str(wait)+'s...')
@@ -178,7 +182,11 @@ class FindNewDialog(QDialog):
             
             err = 1
             while err==1:
-                err = self.manager.updateFileInfoEHentai(fileinfo['hash'], str(url))
+                try:
+                    err = self.manager.updateFileInfoEHentai(fileinfo['hash'], str(url))
+                except Exception, e:
+                    self.addInfo('Error when loading url: '+str(e))
+                    continue
                 if err==1:
                     wait = self.manager.getSettings()['eh_overload_delay']
                     self.addInfo('EH connection overloaded, waiting '+wait+'s...')

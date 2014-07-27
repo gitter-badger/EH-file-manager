@@ -181,7 +181,10 @@ class GalleryManager():
             self.dbmodel.addFile(filehash=filehash, filepath=filepath_rel, title=title)
             
             # get thumbnail
-            self.getThumb(filepath, filehash)
+            try:
+                self.getThumb(filepath, filehash)
+            except Exception, e:
+                logger.error('Other error when generating thumb: '+str(e))
             
             return True
               
@@ -473,7 +476,11 @@ class GalleryManager():
 
         # get path to first page
         filtered_filelist.sort()
-        file_to_use = filtered_filelist[0]
+        try:
+            file_to_use = filtered_filelist[0]
+        except Exception, e:
+            logger.error('No images in archive file - thumb generation failed: '+str(e))
+            return None
         
         # extract first page
         try:
