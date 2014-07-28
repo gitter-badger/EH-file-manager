@@ -64,10 +64,14 @@ class ArchiveFile():
             outfile = open(os.path.join(path, outfile_name), 'wb')
             outfile.write(self.archive.getmember(file_to_ext).read())
             outfile.close()
-            self.open_7z.close()
         elif self.extension in ['zip', 'rar']:
             self.archive.extract(file_to_ext, path)
-            self.archive.close()
+            
+    def open(self, file_to_open): 
+        if self.extension == '7z':
+            return self.archive.getmember(file_to_open).read()
+        elif self.extension in ['zip', 'rar']:
+            return self.archive.open(file_to_open).read()
     
     def close(self):
         if self.extension == '7z':

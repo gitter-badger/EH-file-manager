@@ -23,6 +23,7 @@ logger = logging.getLogger(__name__)
 import os
 import hashlib
 import time
+import tempfile
 import dateutil.parser as dateparser
 #import datetime
 
@@ -35,7 +36,6 @@ import decompressor
 class EHFetcher():
     def __init__(self, manager, username=None, password=None):
         self.manager = manager
-        self.temppath = self.manager.temppath
         self.cookies = {}
         
         if username is not None and password is not None:
@@ -118,8 +118,6 @@ class EHFetcher():
         Returns SHA-1 hash of file in the middle of gallery.
         Returns None if error
         """
-        # clean temp dir
-        self.manager.clearTemp()
         
         # open archive
         try:
@@ -140,35 +138,31 @@ class EHFetcher():
 
         # get path to page in the middle of file
         filtered_filelist.sort()
-        file_to_use = filtered_filelist[int(len(filtered_filelist)/2)]
+        try:
+            file_to_use = filtered_filelist[int(len(filtered_filelist)/2)]
+        except Exception, e:
+            logger.warning('No images in file: %s', filepath)
+            logger.debug(str(e))
+            return None
         
         # extract page
         try:
-            archive.extract(file_to_use, self.temppath)
+            f = tempfile.NamedTemporaryFile()
+            f.write(archive.open(file_to_use))
         except Exception, e:
             logger.warning('Error uncompressing File: %s', filepath)
             logger.debug(str(e))
+            archive.close()
             return None
-        archive.close()
-            
-        # get correct unix path to extracted file
-        filepathlist = []
-        for root, dirs, files in os.walk(self.temppath):
-            paths = [os.path.join(root,f) for f in files]
-            filepathlist+=paths
-        file_to_use = filepathlist[0]
-        old_path = os.path.join(self.temppath, file_to_use)
         
         # get SHA1 hash
-        afile = open(old_path, 'rb')
+        afile = open(f.name, 'rb')
+        f.close()
         buf = afile.read()
         afile.close()
         hasher = hashlib.sha1()
         hasher.update(buf)
         sha1hash = hasher.hexdigest()
-        
-        # clean temp dir
-        self.manager.clearTemp()
         
         return sha1hash
     

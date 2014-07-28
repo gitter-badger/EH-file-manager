@@ -27,6 +27,7 @@ from operator import itemgetter
 import shutil
 import time
 import yaml
+import tempfile
 from PIL import Image
 
 from database_model import DatabaseModel
@@ -39,7 +40,6 @@ class GalleryManager():
     Main class of application
     """
     CONFIGDIR = '.config'
-    TEMPDIR = '_temp'
     THUMBDIR = 'thumb'
     COOKIEFILE = 'cookies.yaml'
     THUMB_MAXSIZE = 180, 270
@@ -48,7 +48,6 @@ class GalleryManager():
         self.gallerypath = str(gallerypath)
         
         self.configpath = None
-        self.temppath = None
         self.thumbpath = None
         
         self.dbmodel = None
@@ -75,7 +74,6 @@ class GalleryManager():
         
         # def paths
         self.configpath = os.path.join(self.gallerypath, self.CONFIGDIR)
-        self.temppath = os.path.join(self.configpath, self.TEMPDIR)
         self.thumbpath = os.path.join(self.configpath, self.THUMBDIR)
         
         # load settings
@@ -374,15 +372,6 @@ class GalleryManager():
         
     def updateFileInfo(self, filehash, newinfo):
         self.dbmodel.updateFile(filehash, newinfo)
-    
-    def clearTemp(self):
-        """
-        Removes anything that was in temp directory.
-        """
-        logger.debug('Clean TEMP dir')
-        if os.path.isdir(self.temppath):
-            shutil.rmtree(self.temppath)
-        os.mkdir(self.temppath)
         
     def loginToEH(self, username, password):
         """
@@ -449,13 +438,10 @@ class GalleryManager():
         Thumbnail is saved as FILEHASH.png in THUMBDIR.
         
         Returns:
-            None - if ERROR
-            filename of thumb - if OK
+            False - if ERROR
+            True - if OK
         """
         logger.debug('Creating thumbnail...')
-        
-        # clean temp dir
-        self.clearTemp()
         
         # open archive
         try:
@@ -463,7 +449,7 @@ class GalleryManager():
         except Exception, e:
             logger.warning('Error openning File: %s', filepath)
             logger.debug(str(e))
-            return None
+            return False
         
         # get list of files in archive
         filelist = archive.namelist()
@@ -480,36 +466,32 @@ class GalleryManager():
             file_to_use = filtered_filelist[0]
         except Exception, e:
             logger.error('No images in archive file - thumb generation failed: '+str(e))
-            return None
+            return False
         
         # extract first page
         try:
-            archive.extract(file_to_use, self.temppath)
+            f = tempfile.NamedTemporaryFile()
+            f.write(archive.open(file_to_use))
         except Exception, e:
             logger.warning('Error uncompressing File: %s', filepath)
             logger.debug(str(e))
-            return None
-        archive.close()
-            
-        # get correct unix path to extracted file
-        filepathlist = []
-        for root, dirs, files in os.walk(self.temppath):
-            paths = [os.path.join(root,f) for f in files]
-            filepathlist+=paths
-        file_to_use = filepathlist[0]
-        old_path = os.path.join(self.temppath, file_to_use)
-        
+            archive.close()
+            return False
+
         # create thumbnail
-        im = Image.open(old_path)
+        im = Image.open(f.name)
+        f.close()
         im.thumbnail(self.THUMB_MAXSIZE, Image.ANTIALIAS)
         new_filename = filehash+'.png'
         final_path = os.path.join(self.thumbpath, new_filename)
-        im.save(final_path, "PNG")
-        
-        # clean temp dir
-        self.clearTemp()
-        
-        return new_filename
+        try:
+            im.save(final_path, "PNG")
+        except Exception, e:
+            logger.warning('Couldnt save thumb for: %s', filepath)
+            logger.debug(str(e))
+            return False
+
+        return True
         
     def updateFileInfoEHentai(self, filehash, ehlink):
         """

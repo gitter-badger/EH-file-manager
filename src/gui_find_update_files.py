@@ -121,9 +121,10 @@ class FindNewDialog(QDialog):
     
     def updateNewFiles(self):
         self.addInfo('Updating new files with info from EH...')
-        
+        logger.info('Updating new files with info from EH...')
         
         self.addInfo('Requesting lists of galleries...')
+        logger.info('Requesting lists of galleries...')
         files_galleries = []
         for i in range(len(self.filelist)):
             self.addInfo('Processing '+str(i+1)+'/'+str(len(self.filelist)))
@@ -141,10 +142,13 @@ class FindNewDialog(QDialog):
                     gallerylist, err = self.manager.findFileOnEH(fileinfo['hash'])
                 except Exception, e:
                     self.addInfo('Error when loading url: '+str(e))
-                    continue
+                    logger.error('Error when loading url: '+str(e))
+                    err = 101
+                    break
                 if err==1:
                     wait = self.manager.getSettings()['eh_overload_delay']
                     self.addInfo('EH connection overloaded, waiting '+str(wait)+'s...')
+                    logger.warning('EH connection overloaded, waiting '+str(wait)+'s...')
                     time.sleep(wait)
                     
             if err%10==0 and len(gallerylist) == 0:
@@ -157,6 +161,7 @@ class FindNewDialog(QDialog):
                 return
             
         self.addInfo('Selecting galleries to update info from...')
+        logger.info('Selecting galleries to update info from...')
         files_galleries_filtered = []
         for i in range(len(files_galleries)):
             fileinfo = files_galleries[i][0]
@@ -171,6 +176,7 @@ class FindNewDialog(QDialog):
                 files_galleries_filtered.append([fileinfo, returned[3]])
         
         self.addInfo('Updating selected galleries from EH...')
+        logger.info('Updating selected galleries from EH...')
         for i in range(len(files_galleries_filtered)):
             self.addInfo('Processing '+str(i+1)+'/'+str(len(files_galleries_filtered)))
             
@@ -186,10 +192,13 @@ class FindNewDialog(QDialog):
                     err = self.manager.updateFileInfoEHentai(fileinfo['hash'], str(url))
                 except Exception, e:
                     self.addInfo('Error when loading url: '+str(e))
-                    continue
+                    logger.error('Error when loading url: '+str(e))
+                    err = 101
+                    break
                 if err==1:
                     wait = self.manager.getSettings()['eh_overload_delay']
                     self.addInfo('EH connection overloaded, waiting '+wait+'s...')
+                    logger.warning('EH connection overloaded, waiting '+str(wait)+'s...')
                     time.sleep(wait)
                     
             if self.printError(err):
