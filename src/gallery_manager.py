@@ -33,6 +33,7 @@ from PIL import Image
 from database_model import DatabaseModel
 from settings import Settings
 from eh_fetcher import EHFetcher
+from fakku_fetcher import FakkuFetcher
 import decompressor
 
 class GalleryManager():
@@ -53,6 +54,7 @@ class GalleryManager():
         self.dbmodel = None
         self.settings = None
         self.ehfetcher = None
+        self.fakkufetcher = None
         
         if self.gallerypath is not '':
             self.openPath(self.gallerypath)
@@ -84,8 +86,9 @@ class GalleryManager():
         self.dbmodel = DatabaseModel(self.configpath)
         self.dbmodel.openDatabase()   
         
-        # init ehfetcher
+        # init fetchers
         self.ehfetcher = EHFetcher(self)
+        self.fakkufetcher = FakkuFetcher()
     
     def isGallery(self, path):
         """
@@ -515,30 +518,37 @@ class GalleryManager():
             return False
 
         return True
-        
-    def updateFileInfoEHentai(self, filehash, ehlink):
+    
+    def updateFileInfoLink(self, filehash, link):
         """
         Returns:
             EH fetcher error code (if %10==0: OK)
         """
         # add schema to link
-        if not (ehlink.startswith('http://') or ehlink.startswith('https://')):
-            ehlink = 'http://'+ehlink
+        if not (link.startswith('http://') or link.startswith('https://')):
+            link = 'http://'+link
         
-        originfo = self.getFileByHash(filehash)[0]
-        ehinfo, err = self.ehfetcher.infoFromEHentaiLink(ehlink)
+        if 'fakku.net' in link:
+            #try:
+            info = self.fakkufetcher.infoFromFakkuLink(link)
+            #except Exception, e:
+                #logger.error('Error when getting info from fakku: '+str(e))
+                #return 101
+            err = 0
+        elif 'hentai.org' in link:
+            info, err = self.ehfetcher.infoFromEHentaiLink(link)
+        else:
+            logger.error('Not supported website')
+            return 101
+            
         if err%10!=0:
             logger.warning('URL update failed')
             return err
-            
-        ehinfo['filepath'] = originfo['filepath']
-        ehinfo['new'] = False
-        if not 'published' in ehinfo:
-            ehinfo['published'] = originfo['published']
-        if not 'description' in ehinfo:
-            ehinfo['description'] = originfo['description']
         
-        self.updateFileInfo(filehash, ehinfo)
+        originfo = self.getFileByHash(filehash)[0]
+        originfo.update(info)
+            
+        self.updateFileInfo(filehash, originfo)
         
         return err
         

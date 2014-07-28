@@ -35,7 +35,7 @@ class FakkuFetcher():
         Returns:
             fakku gallery metadata parsed from html file.
         """
-        r = requests.get(fakkulink)
+        r = requests.get(fakkulink, timeout=30)
         html = unicode(r.text).encode("utf8")
             
         fileinfo = {}
@@ -88,14 +88,19 @@ class FakkuFetcher():
                 fileinfo['language'] = right
                 
             elif left == 'uploader':
-                uploader = right.split('on')[0].strip().lower()
-                published = right.split('on')[1].strip()
+                uploader = right.split(' on ')[0].strip().lower()
+                published = right.split(' on ')[1].strip()
                 
-                dt = dateparser.parse(published)
-                published_unix = int(time.mktime(dt.timetuple()))
+                try:
+                    dt = dateparser.parse(published)
+                    published_unix = int(time.mktime(dt.timetuple()))
+                except Exception, e:
+                    logger.warning('Error parsing date: '+str(published)+'\nerr: '+str(e))
+                else:
+                    fileinfo['published'] = published_unix
                 
                 fileinfo['uploader'] = uploader
-                fileinfo['published'] = published_unix 
+                 
                 
             elif left == 'description':
                 if right=='no description has been written.':

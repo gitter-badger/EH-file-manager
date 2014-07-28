@@ -189,7 +189,7 @@ class FindNewDialog(QDialog):
             err = 1
             while err==1:
                 try:
-                    err = self.manager.updateFileInfoEHentai(fileinfo['hash'], str(url))
+                    err = self.manager.updateFileInfoLink(fileinfo['hash'], str(url))
                 except Exception, e:
                     self.addInfo('Error when loading url: '+str(e))
                     logger.error('Error when loading url: '+str(e))

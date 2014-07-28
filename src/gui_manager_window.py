@@ -119,8 +119,8 @@ class ManagerWindow(QMainWindow):
         removeFileAction.setStatusTip('Remove file info from database')
         removeFileAction.triggered.connect(self.removeFile)
 
-        updateFileAction_Link = QtGui.QAction('Info from EH Link', self) 
-        updateFileAction_Link.setStatusTip('Updates file info with information from e-hentai.org link (from HTML, API is fallback)')
+        updateFileAction_Link = QtGui.QAction('Info from Link', self) 
+        updateFileAction_Link.setStatusTip('Updates file info with information from link (HTML parser)')
         updateFileAction_Link.triggered.connect(self.updateInfoFromLink)
         
         updateFileAction_EH = QtGui.QAction('Info from EH', self) 
@@ -332,9 +332,9 @@ class ManagerWindow(QMainWindow):
             logger.debug('No file selected, nothing to update.')
             QMessageBox.information(self, 'Message', 'No file selected, nothing to update.')
         else:
-            url = QInputDialog.getText(self, 'Update file info from url', 'Enter ehentai.org gallery link:')
+            url = QInputDialog.getText(self, 'Update file info from url', 'Enter gallery link:')
             if url[1] == True:
-                err = self.manager.updateFileInfoEHentai(self.selectedFile, str(url[0]))
+                err = self.manager.updateFileInfoLink(self.selectedFile, str(url[0]))
                 
                 self.showError(err)
                 
@@ -358,7 +358,7 @@ class ManagerWindow(QMainWindow):
             returned = app.getClicked()
             if returned is not None:
                 eh_gallery = returned[3]
-                err = self.manager.updateFileInfoEHentai(self.selectedFile, str(eh_gallery))
+                err = self.manager.updateFileInfoLink(self.selectedFile, str(eh_gallery))
                 
                 self.showError(err)
                 
@@ -443,7 +443,7 @@ class ManagerWindow(QMainWindow):
                 returned = app.getClicked()
                 if returned is not None:
                     eh_gallery = returned[3]
-                    err = self.manager.updateFileInfoEHentai(filehash, str(eh_gallery))
+                    err = self.manager.updateFileInfoLink(filehash, str(eh_gallery))
                     
                     self.showError(err)
             
