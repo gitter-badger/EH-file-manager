@@ -298,6 +298,7 @@ class GalleryManager():
             for f in all_files:
                 eq = False
                 for s in search_strs:
+                    eq = False
                     # remove quotes and split (category:tag)
                     s = s.replace('"', '').replace("'",'')
                     s = s.split(':')
