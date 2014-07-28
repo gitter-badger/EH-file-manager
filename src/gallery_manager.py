@@ -373,6 +373,29 @@ class GalleryManager():
     def updateFileInfo(self, filehash, newinfo):
         self.dbmodel.updateFile(filehash, newinfo)
         
+    def fixFilepaths(self):
+        """
+        requirements: 1 file == 1 unique hash
+        """
+        all_files = self.dbmodel.getFiles()
+        missing_files = []
+        for f in all_files:
+            if not os.path.isfile(os.path.join(self.gallerypath, f['filepath'])):
+                missing_files.append(f)
+        
+        logger.info('Found '+str(len(missing_files))+' wrong filepaths in database')
+        
+        if len(missing_files)!=0:
+            gallery_filelist = self.getFileList()
+        
+        for mf in missing_files:
+            for fl in gallery_filelist:
+                if fl[1] == mf['hash']:
+                    logger.debug('Found file in new location: '+fl[0])
+                    mf['filepath'] = fl[0]
+                    self.updateFileInfo(mf['hash'], mf)
+                    break
+        
     def loginToEH(self, username, password):
         """
         Returns if login was sucessfull

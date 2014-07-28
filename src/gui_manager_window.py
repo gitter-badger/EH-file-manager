@@ -81,6 +81,10 @@ class ManagerWindow(QMainWindow):
         updateSearchEHAction.setStatusTip('Automatically updates info of searched files with information from EH')
         updateSearchEHAction.triggered.connect(self.updateSearchFromEH)
         
+        fixPathsAction = QtGui.QAction('Fix paths', self)
+        fixPathsAction.setStatusTip('Fixes paths to files in gallery (run if moved or renamed file)')
+        fixPathsAction.triggered.connect(self.manager.fixFilepaths)
+        
         settingsAction = QtGui.QAction(QIcon.fromTheme("document-properties"), 'Settings', self)
         settingsAction.setShortcut('Ctrl+S')
         settingsAction.setStatusTip('Edit application settings')
@@ -94,6 +98,7 @@ class ManagerWindow(QMainWindow):
         fileMenu = menubar.addMenu('File')
         fileMenu.addAction(addFileAction)
         fileMenu.addAction(findNewFilesAction)
+        fileMenu.addAction(fixPathsAction)
         fileMenu.addAction(updateSearchEHAction)
         fileMenu.addAction(settingsAction)
         fileMenu.addAction(exitAction)
