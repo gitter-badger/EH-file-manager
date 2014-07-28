@@ -55,9 +55,9 @@ class EHFetcher():
         payload.update(login)
         
         # login to EH
-        eh_cookies = requests.post('https://forums.e-hentai.org/index.php?act=Login&CODE=01', data=payload).cookies.get_dict()
+        eh_cookies = requests.post('https://forums.e-hentai.org/index.php?act=Login&CODE=01', data=payload, timeout=30).cookies.get_dict()
         # get exhentai cookies
-        exh_cookies = requests.get('http://exhentai.org', cookies=eh_cookies).cookies.get_dict()
+        exh_cookies = requests.get('http://exhentai.org', cookies=eh_cookies, timeout=30).cookies.get_dict()
         
         # merge cookies
         eh_cookies.update(exh_cookies)
@@ -176,7 +176,7 @@ class EHFetcher():
         else:
             site = 'g.e-hentai'
         
-        r = requests.get('http://'+site+'.org/?f_shash='+img_file_sh1_hash, cookies=self.cookies)
+        r = requests.get('http://'+site+'.org/?f_shash='+img_file_sh1_hash, cookies=self.cookies, timeout=30)
         html = unicode(r.text).encode("utf8")
         
         return self.getListOfEHGalleriesFromHTML(html)
@@ -278,7 +278,7 @@ class EHFetcher():
         payload = json.dumps({'method': 'gdata', 'gidlist': [[gallery_id, gallery_token]]})
         headers = {'content-type': 'application/json'}
         
-        r = requests.post("http://g.e-hentai.org/api.php", data=payload, headers=headers, cookies=self.cookies)
+        r = requests.post("http://g.e-hentai.org/api.php", data=payload, headers=headers, cookies=self.cookies, timeout=30)
         try:
             gallery_info = r.json()['gmetadata'][0]
         except Exception, e:
@@ -300,7 +300,7 @@ class EHFetcher():
                 getEHError codes
                 11 - no gallery info accesable (gallery on exhentai)
         """
-        r = requests.get(ehlink, cookies=self.cookies)
+        r = requests.get(ehlink, cookies=self.cookies, timeout=30)
         html = unicode(r.text).encode("utf8")
         
         # Test for html error
