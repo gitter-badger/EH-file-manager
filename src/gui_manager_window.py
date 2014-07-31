@@ -206,7 +206,7 @@ class ManagerWindow(QMainWindow):
         self.ui_box_new = QCheckBox('Only new files', self)
         self.ui_box_del = QCheckBox('Only deleted files', self)
         
-        sorts = ['published', 'title', 'title_jpn']
+        sorts = ['published', 'title', 'category']
         self.ui_combobox_sort = QComboBox()
         self.ui_combobox_sort.addItems(sorts)
             

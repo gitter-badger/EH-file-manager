@@ -370,6 +370,8 @@ class GalleryManager():
         filtered = filtered_new 
             
         # Sort results
+        if search_cfg['sort'] == 'published':
+            search_cfg['sort_rev'] = not search_cfg['sort_rev']
         filtered = sorted(filtered, key=itemgetter(search_cfg['sort']), reverse=search_cfg['sort_rev']) 
              
         return filtered
