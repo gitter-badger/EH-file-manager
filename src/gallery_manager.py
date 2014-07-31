@@ -548,6 +548,8 @@ class GalleryManager():
         
         originfo = self.getFileByHash(filehash)[0]
         originfo.update(info)
+        
+        originfo['new'] = False
             
         self.updateFileInfo(filehash, originfo)
         
