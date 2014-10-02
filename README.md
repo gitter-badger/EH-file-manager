@@ -1,3 +1,7 @@
+<h2> This is very alpha version, expect a lot of errors and regressions!! </h2>
+That means that if you don't want to torture yourself, you shouldn't use it until this notice disappears.
+
+
 EH File Manager
 ======
 The goal of this little project it to create a file managment system that could be fully used as off-line version of e-hentai.org gallery system.
