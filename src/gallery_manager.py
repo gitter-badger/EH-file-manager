@@ -107,7 +107,7 @@ class GalleryManager():
         logger.debug('isGallery: given path is not gallery.')
         return False
         
-    def initGallery(self, path):
+    def initGallery(self, path, managed_folders=False):
         """
         Creates new gallery basic structure.
         """
@@ -124,6 +124,29 @@ class GalleryManager():
         DatabaseModel(configpath)
         setmod = Settings(configpath)
         setmod.loadSettings()
+        
+        # create default category folders
+        if managed_folders:    
+            newSettings = setmod.getSettings()
+            newSettings['managed_folders'] = True
+            setmod.setSettings(newSettings)
+                    
+            fpath = os.path.join(path, "_unsorted") # files that dont has correct category
+            if not os.path.isdir(fpath):
+                os.mkdir(fpath)
+                
+            fpath = os.path.join(path, "_new") # files that are not in database yet. (can be added by user)
+            if not os.path.isdir(fpath):
+                os.mkdir(fpath)
+                
+            # TODO - move all files from existing directiories to _new directory
+            # TODO - remove all old directories; show confrmation dialog to user
+                
+            for c in setmod.getSettings['categories']:
+                fpath = os.path.join(path, c)
+                if not os.path.isdir(fpath):
+                    os.mkdir(fpath)
+                    
         setmod.saveSettings()
         
     def getSettings(self):
@@ -133,6 +156,14 @@ class GalleryManager():
         return self.settings.getDefaultSettings()
         
     def saveSettings(self, newSettings):
+        reserved_category_names = ['_unsorted', '_new']
+        for rc in reserved_category_names:
+            if rc in newSettings['categories']:
+                newSettings.remove(rc)
+                logger.warning('saveSettings: Removing reserved name '+rc+' from new category list')
+                
+        # TODO - make/remove category folders
+        
         self.settings.setSettings(newSettings)
         self.settings.saveSettings()
     
