@@ -29,6 +29,7 @@ import time
 import yaml
 import tempfile
 from PIL import Image
+import random
 
 from database_model import DatabaseModel
 from settings import Settings
@@ -44,6 +45,9 @@ class GalleryManager():
     THUMBDIR = 'thumb'
     COOKIEFILE = 'cookies.yaml'
     THUMB_MAXSIZE = 180, 270
+    
+    # reserved category (folder) names
+    RESERVED = {'new_dir':'_new', 'unsorted_dir':'_unsorted'}
     
     def __init__(self, gallerypath=''):
         self.gallerypath = str(gallerypath)
@@ -107,7 +111,7 @@ class GalleryManager():
         logger.debug('isGallery: given path is not gallery.')
         return False
         
-    def initGallery(self, path, managed_folders=False):
+    def initGallery(self, path):
         """
         Creates new gallery basic structure.
         """
@@ -124,30 +128,76 @@ class GalleryManager():
         DatabaseModel(configpath)
         setmod = Settings(configpath)
         setmod.loadSettings()
+        setmod.saveSettings()
         
         # create default category folders
-        if managed_folders:    
-            newSettings = setmod.getSettings()
-            newSettings['managed_folders'] = True
-            setmod.setSettings(newSettings)
-                    
-            fpath = os.path.join(path, "_unsorted") # files that dont has correct category
-            if not os.path.isdir(fpath):
-                os.mkdir(fpath)
+        # TODO - show confirm dialog before touching files
+        self.initFolders(path, setmod)
                 
-            fpath = os.path.join(path, "_new") # files that are not in database yet. (can be added by user)
-            if not os.path.isdir(fpath):
-                os.mkdir(fpath)
-                
-            # TODO - move all files from existing directiories to _new directory
-            # TODO - remove all old directories; show confrmation dialog to user
-                
-            for c in setmod.getSettings['categories']:
-                fpath = os.path.join(path, c)
-                if not os.path.isdir(fpath):
+    def initFolders(self, path, settings):
+        """
+        Creates basic gallery folder structure
+        """
+        configpath = os.path.join(path, self.CONFIGDIR)
+        setmod = settings
+        
+        # create folder for files that dont has correct category
+        fpath = os.path.join(path, self.RESERVED['unsorted_dir']) 
+        if not os.path.isdir(fpath):
+            os.mkdir(fpath)
+        
+        # create folder for files that are not in database yet. (added by user)
+        fpath = os.path.join(path, self.RESERVED['new_dir']) 
+        if not os.path.isdir(fpath):
+            os.mkdir(fpath)
+            
+        # move all files from existing directiories to _new directory
+        logger.debug('Getting list of files in gallery path...')
+        filepathlist = []
+        for root, dirs, files in os.walk(unicode(path)):
+            if os.path.commonprefix([configpath, root]) != configpath:
+                paths = [os.path.join(root,f) for f in files]
+                filepathlist+=paths 
+        logger.debug('Found '+str(len(filepathlist))+' files')
+        
+        logger.debug('Moving existing files to _new folder...')
+        for filepath in filepathlist:
+            logger.debug('Moving file '+filepath+' to new dir.')
+            dest = os.path.join(path, os.path.join(self.RESERVED['new_dir'], os.path.basename(filepath)))
+            if filepath == dest:
+                logger.debug('source and destintion paths are identical')
+                continue
+            elif os.path.isfile(dest):
+                logger.debug('There is allready file with same name in new directory, genereating hashes...')
+                old_hash = self.getHash(dest)
+                new_hash = self.getHash(filepath)
+                if old_hash == new_hash:
+                    logger.debug('files are identical, overwritting the old one.')
+                else:
+                    logger.debug('files are different, creating subdirectory for new file')
+                    n = 0
+                    while os.path.isdir(os.path.join(path, os.path.join(self.RESERVED['new_dir'], str(n)))):
+                        n = random.randint(0,999999)
+                    fpath = os.path.join(path, os.path.join(self.RESERVED['new_dir'], str(n)))
                     os.mkdir(fpath)
-                    
-        setmod.saveSettings()
+                    dest = os.path.join(fpath, os.path.basename(filepath))
+
+            shutil.move(filepath, dest)
+        
+        # remove all old directories
+        for folder in os.listdir(path):
+            if folder in [self.RESERVED['unsorted_dir'], self.RESERVED['new_dir'], self.CONFIGDIR]:
+                continue
+            else:
+                logger.debug('Removing folder '+folder)
+                shutil.rmtree(os.path.join(path, folder))
+        
+        # create new category folders
+        for c in setmod.getSettings()['categories']:
+            fpath = os.path.join(path, c)
+            if not os.path.isdir(fpath):
+                logger.debug('creating folder '+c)
+                os.mkdir(fpath)
         
     def getSettings(self):
         return self.settings.getSettings()
@@ -156,8 +206,8 @@ class GalleryManager():
         return self.settings.getDefaultSettings()
         
     def saveSettings(self, newSettings):
-        reserved_category_names = ['_unsorted', '_new']
-        for rc in reserved_category_names:
+        # remove reserved category names from new settings
+        for rc in self.RESERVED:
             if rc in newSettings['categories']:
                 newSettings.remove(rc)
                 logger.warning('saveSettings: Removing reserved name '+rc+' from new category list')

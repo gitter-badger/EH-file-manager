@@ -92,7 +92,6 @@ class Settings():
                     'eh_delay': 2,
                     'eh_overload_delay': 60,
                     'categories': ['doujinshi', 'manga', 'artist cg sets', 'game cg sets', 'western', 'non-h', 'image sets',                'cosplay', 'asian porn', 'misc'],
-                    'managed_folders':False,
                     'categories_folder_tagsort':[['doujinshi', 'parody'], ['manga', 'artist'], ['game cg sets', 'group'], ['image sets', 'artist'],['artist cg sets','artist'], ['western','artist']],
                     'categories_folder_tagsort_default':None,
                     'categories_enabled': [],
