@@ -1,2 +1,2 @@
 #!/bin/bash
-python src/main.py
+python -m ehfilemanager

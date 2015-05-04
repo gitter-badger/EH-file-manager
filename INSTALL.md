@@ -5,18 +5,23 @@ Linux (Debian/Ubuntu/Mint)
 -------
 Get zipped source and extract it anywhere you want:
 
-    https://github.com/kunesj/EH-file-manager
-
-Run this to install required dependencies:
-
-    sudo apt-get install python python-pip python-sqlite python-qt4 python-imaging python-yaml python-dateutil unrar python-lzma python-beautifulsoup python-requests
-    wget http://ftp.us.debian.org/debian/pool/main/p/python-rarfile/python-rarfile_2.6-1_all.deb -O python-rarfile.deb
-    sudo dpkg -i python-rarfile.deb
-    sudo apt-get -f install
+    https://github.com/kunesj/EH-file-manager 
     
-(Optional) Install mcomix:
+To install both required dependencies and application to local system run from source directory:
 
-    sudo apt-get install mcomix
+    make install
+    
+Its now possible to Launch application directly from command line with:
+
+    ehfilemanager
+
+If you want to uninstall, you can do it by running:
+
+    make uninstall
+
+Optionally you can only install dependencies and run application directly from downloaded source:
+
+    make install_dep
 
 Windows
 -------

@@ -1,1 +1,1 @@
-python src/main.py -d
+python -m ehfilemanager -d
