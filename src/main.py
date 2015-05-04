@@ -23,6 +23,7 @@ logger = logging.getLogger(__name__)
 
 import argparse
 import sys
+import os
 
 from PyQt4.QtGui import QApplication, QMessageBox, QFileDialog
 
@@ -45,11 +46,20 @@ def main():
     args = parser.parse_args()
     
     # Logger configuration
+    logging.basicConfig(stream=sys.stdout)
     logger = logging.getLogger()
+    
+    logger.setLevel(logging.WARNING)
     if args.debug:
-        logger.setLevel(logging.DEBUG)
-    else:
-        logger.setLevel(logging.WARNING)
+        logger.setLevel(logging.DEBUG)   
+    
+    try:
+        os.remove("eh_file_manager.log")
+    except OSError:
+        pass
+    fh = logging.FileHandler("eh_file_manager.log")
+    fh.setFormatter(logging.Formatter(fmt='%(levelname)s:%(name)s:%(message)s'))
+    logger.addHandler(fh)
         
     app = QApplication(sys.argv)
     
