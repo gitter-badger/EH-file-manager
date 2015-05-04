@@ -9,8 +9,10 @@ Get zipped source and extract it anywhere you want:
 
 Run this to install required dependencies:
 
-    sudo apt-get install python python-pip python-sqlite python-qt4 python-imaging python-yaml python-dateutil unrar
-    sudo pip install requests beautifulsoup4 pylzma rarfile
+    sudo apt-get install python python-pip python-sqlite python-qt4 python-imaging python-yaml python-dateutil unrar python-lzma python-beautifulsoup python-requests
+    wget http://ftp.us.debian.org/debian/pool/main/p/python-rarfile/python-rarfile_2.6-1_all.deb -O python-rarfile.deb
+    sudo dpkg -i python-rarfile.deb
+    sudo apt-get -f install
     
 (Optional) Install mcomix:
 
@@ -18,6 +20,8 @@ Run this to install required dependencies:
 
 Windows
 -------
+!!Warning!! Main development is on Linux, so Windows version may be very buggy.
+
 Get zipped source and extract it anywhere you want:
 
     https://github.com/kunesj/EH-file-manager
