@@ -43,6 +43,10 @@ def main():
         '-d', '--debug',
         action='store_true',
         help='Debug mode')
+    parser.add_argument(
+        '--logfile',
+        action='store_true',
+        help='Save log to file')
     args = parser.parse_args()
     
     # Logger configuration
@@ -53,15 +57,16 @@ def main():
     if args.debug:
         logger.setLevel(logging.DEBUG)   
     
-    try:
-        os.remove("eh_file_manager.log")
-    except OSError:
-        pass
-    fh = logging.FileHandler("eh_file_manager.log")
-    fh.setFormatter(logging.Formatter(fmt='%(levelname)s:%(name)s:%(message)s'))
-    logger.addHandler(fh)
-        
-    app = QApplication(sys.argv)
+    if args.logfile:
+        try:
+            os.remove("eh_file_manager.log")
+        except OSError:
+            pass
+        fh = logging.FileHandler("eh_file_manager.log")
+        fh.setFormatter(logging.Formatter(fmt='%(levelname)s:%(name)s:%(message)s'))
+        logger.addHandler(fh)
+            
+        app = QApplication(sys.argv)
     
     gallerypath = args.gallery
     gm = GalleryManager()
