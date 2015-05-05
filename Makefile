@@ -9,6 +9,7 @@ install: install_dep install_app
 	
 install_app:
 	sudo python setup.py install
+	sudo cp ehfilemanager.desktop /usr/share/applications/ehfilemanager.desktop
 	
 install_dep: 
 	sudo apt-get install python python-pip python-sqlite python-qt4 python-imaging python-yaml python-dateutil unrar-free
@@ -17,3 +18,4 @@ install_dep:
 	
 uninstall:
 	sudo pip uninstall eh-file-manager
+	sudo rm /usr/share/applications/ehfilemanager.desktop

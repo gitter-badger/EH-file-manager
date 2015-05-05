@@ -1,0 +1,12 @@
+#!/usr/bin/env xdg-open
+[Desktop Entry]
+Name=EH File Manager
+Name[en_US]=ehfilemanager
+GenericName=EH File Manager
+Exec=ehfilemanager
+Icon=system-file-manager
+Terminal=false
+Type=Application
+StartupNotify=true
+Categories=Graphics;Viewer;
+
