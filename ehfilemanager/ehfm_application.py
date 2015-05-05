@@ -66,7 +66,7 @@ def main():
         fh.setFormatter(logging.Formatter(fmt='%(levelname)s:%(name)s:%(message)s'))
         logger.addHandler(fh)
             
-        app = QApplication(sys.argv)
+    app = QApplication(sys.argv)
     
     gallerypath = args.gallery
     gm = GalleryManager()
