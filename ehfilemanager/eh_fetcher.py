@@ -87,7 +87,7 @@ class EHFetcher():
     def setCookies(self, cookies):
         self.cookies = cookies
         
-    def getEHError(self, html):
+    def getEHError(self, html): # TODO: FIX THIS
         """
         Returns
             0 - if no error
@@ -97,10 +97,10 @@ class EHFetcher():
         """
         soup = BeautifulSoup(html)
         
-        div_first = soup.body.find('div')
-        if div_first is None:
+        div_first = soup.find('div')
+        if div_first is None: 
             # no div in whole html == banned
-            return 2
+            return 2 # "Your IP address has been temporarily banned for excessive pageloads..."
         
         divs = div_first.findAll('div')
         if divs == []:
