@@ -16,9 +16,13 @@ Install
 
 See [install notes](https://github.com/kunesj/EH-file-manager/blob/master/INSTALL.md) for Linux and Windows
 
-To get current development run:
+To get current development version run:
 
-    git clone https://github.com/kunesj/EH-file-manager.git
+    git clone -b develop https://github.com/kunesj/EH-file-manager.git
+    
+To get "stable" version run:
+
+    git clone -b master https://github.com/kunesj/EH-file-manager.git
     
 or just download zipped source from:
 

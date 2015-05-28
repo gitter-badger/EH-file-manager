@@ -52,7 +52,7 @@ class ManagerWindow(QMainWindow):
         
         # autologin to eh
         if self.manager.loadSavedCookies():
-            eh_li_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../res/eh-state-login.png")
+            eh_li_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "./res/eh-state-login.png")
             self.ehMenu.setIcon(QIcon(eh_li_path))
     
     def initUI(self):
@@ -151,7 +151,7 @@ class ManagerWindow(QMainWindow):
         self.ehMenu.addAction(getLoginAction)
         self.ehMenu.addAction(loginAction)
         self.ehMenu.addAction(logoutAction)
-        eh_lo_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../res/eh-state-logout.png")
+        eh_lo_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "./res/eh-state-logout.png")
         self.ehMenu.setIcon(QIcon(eh_lo_path))
         
         ## Help menu
@@ -282,19 +282,19 @@ class ManagerWindow(QMainWindow):
         state = self.manager.loginToEH(username,password)
         if state:
             QMessageBox.information(self, 'Message', 'Logged in EH.')
-            eh_li_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../res/eh-state-login.png")
+            eh_li_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "./res/eh-state-login.png")
             self.ehMenu.setIcon(QIcon(eh_li_path))
             if save:
                 self.manager.saveCookies()
         else:
             QMessageBox.warning(self, 'Error', 'Login failed')
-            eh_lo_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../res/eh-state-logout.png")
+            eh_lo_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "./res/eh-state-logout.png")
             self.ehMenu.setIcon(QIcon(eh_lo_path))
         
     def logoutFromEH(self):
         self.manager.loginToEH('','')
         QMessageBox.information(self, 'Message', 'Logged out from EH.')
-        eh_lo_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../res/eh-state-logout.png")
+        eh_lo_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "./res/eh-state-logout.png")
         self.ehMenu.setIcon(QIcon(eh_lo_path))
         
     def getLogin(self):
@@ -573,7 +573,7 @@ class ShowDetails(QDialog):
         layout_main.setSpacing(5)
         
         # add thumbnail
-        thumb_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../res/nothumb.png')
+        thumb_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), './res/nothumb.png')
         self.ui_thumb = QLabel()
         myPixmap = QtGui.QPixmap(thumb_path)
         self.ui_thumb.setPixmap(myPixmap)
@@ -661,7 +661,7 @@ class ShowDetails(QDialog):
             self.fileinfo = None
             
             # thumb
-            thumb_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../res/nothumb.png')
+            thumb_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), './res/nothumb.png')
             myPixmap = QtGui.QPixmap(thumb_path)
             self.ui_thumb.setPixmap(myPixmap)
             
@@ -690,7 +690,7 @@ class ShowDetails(QDialog):
             # thumb
             thumb_path = os.path.join(self.manager.thumbpath, self.fileinfo['hash']+'.png')
             if not os.path.isfile(thumb_path):
-                thumb_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../res/nothumb.png')
+                thumb_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), './res/nothumb.png')
             myPixmap = QtGui.QPixmap(thumb_path)
             self.ui_thumb.setPixmap(myPixmap)
             
