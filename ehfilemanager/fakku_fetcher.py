@@ -24,7 +24,11 @@ import time
 import dateutil.parser as dateparser
 
 import requests
-from BeautifulSoup import BeautifulSoup
+try:
+    from BeautifulSoup import BeautifulSoup
+except:
+    # windows fix
+    from bs4 import BeautifulSoup 
 
 class FakkuFetcher():
     def __init__(self):

@@ -132,9 +132,10 @@ class GalleryManager():
         
         # create default category folders
         # TODO - show confirm dialog before touching files
-        self.initFolders(path, setmod)
+        #self.initFolders(path, setmod) # disabled for now
                 
-    def initFolders(self, path, settings):
+    def initFolders(self, path, settings): 
+        # TODO - decide if use or remove
         """
         Creates basic gallery folder structure
         """

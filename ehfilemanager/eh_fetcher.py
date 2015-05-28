@@ -29,7 +29,11 @@ import dateutil.parser as dateparser
 
 import requests
 import json
-from BeautifulSoup import BeautifulSoup
+try:
+    from BeautifulSoup import BeautifulSoup
+except:
+    # windows fix
+    from bs4 import BeautifulSoup 
 
 import decompressor
 
