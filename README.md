@@ -4,6 +4,8 @@ That means that if you don't want to torture yourself, you shouldn't use it unti
 
 EH File Manager
 ======
+
+[![Join the chat at https://gitter.im/kunesj/EH-file-manager](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/kunesj/EH-file-manager?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 The goal of this little project it to create a file managment system that could be fully used as off-line version of e-hentai.org gallery system.
 
 The main reason why was this project started, is that even though EH is very good at showing you what you want to find, its very hard to find something in the heap of downloaded files you get after browsing the site for a while.
