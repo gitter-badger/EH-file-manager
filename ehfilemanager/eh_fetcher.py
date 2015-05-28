@@ -25,7 +25,7 @@ import hashlib
 import time
 import tempfile
 import dateutil.parser as dateparser
-#import datetime
+from datetime import datetime
 
 import requests
 import json
@@ -180,8 +180,10 @@ class EHFetcher():
         else:
             site = 'g.e-hentai'
         
-        r = requests.get('http://'+site+'.org/?f_shash='+img_file_sh1_hash, cookies=self.cookies, timeout=30)
+        link = 'http://'+site+'.org/?f_shash='+img_file_sh1_hash
+        r = requests.get(link, cookies=self.cookies, timeout=30)
         html = unicode(r.text).encode("utf8")
+        self.debug_html(html, link)
         
         return self.getListOfEHGalleriesFromHTML(html)
         
@@ -306,6 +308,7 @@ class EHFetcher():
         """
         r = requests.get(ehlink, cookies=self.cookies, timeout=30)
         html = unicode(r.text).encode("utf8")
+        self.debug_html(html, ehlink)
         
         # Test for html error
         err = self.getEHError(html)
@@ -334,14 +337,20 @@ class EHFetcher():
             fileinfo['category'] = 'game cg sets'
         elif fileinfo['category'] == 'asianporn':
             fileinfo['category'] = 'asian porn'
-
-        left_text = div_gd3.find('div', attrs={'id':'gdd'}).text
-        fileinfo['language'] = left_text[left_text.find('Language:')+9:].strip()
         
-        published_datetime = left_text[left_text.find('Posted:')+7:left_text.find('Images')].strip()
-        dt = dateparser.parse(published_datetime)
-        published_unix = int(time.mktime(dt.timetuple()))
-        fileinfo['published'] = published_unix 
+        trs_gd3 = div_gd3.find('div', attrs={'id':'gdd'})
+        print trs_gd3
+        trs_gd3 = trs_gd3.findall('tr')
+        print trs_gd3
+        for tr in trs_gd3:
+            info_type = tr.find('td', attrs={'class':'gdt1'}).text.strip()
+            if info_type == "Language:":
+                fileinfo['language'] = tr.find('td', attrs={'class':'gdt2'}).text.strip()
+            elif info_type == "Posted:":
+                published_datetime = tr.find('td', attrs={'class':'gdt2'}).text.strip()
+                dt = dateparser.parse(published_datetime)
+                published_unix = int(time.mktime(dt.timetuple()))
+                fileinfo['published'] = published_unix 
         
         div_gd7 = soup.body.find('div', attrs={'id':'gd7'})
         if div_gd7 is None:
@@ -360,3 +369,12 @@ class EHFetcher():
             fileinfo['tags'][cat] = tags
 
         return fileinfo, err
+        
+    def debug_html(self, html, link):
+        # if running in debug mode, save downloaded html to file
+        if logging.getLogger().getEffectiveLevel() == logging.DEBUG:
+            html_log_filename = 'request_'+str(datetime.now()).replace(' ','_').replace(':','-')+'.log'
+            logger.info('Debug Mode => saving html response to file: '+html_log_filename)
+            with open(html_log_filename, 'w') as f:
+                f.write(link+'\n\n')
+                f.write(html) 
